@@ -45,7 +45,22 @@ if ! [ -e index.php -a -e includes/DefaultSettings.php ]; then
 	fi
 fi
 
-# TODO: Create LocalSettings.php or assume web-based configuration after container start?
+: ${MEDIAWIKI_SHARED:=/var/www-shared/html}
+if [ -d "$MEDIAWIKI_SHARED" ]; then
+	# If there is no LocalSettings.php but we have one under the shared
+	# directory, symlink it
+	if [ -e "$SHARED/LocalSettings.php" -a ! -e LocalSettings.php ]; then
+		ln -s "$SHARED/LocalSettings.php" LocalSettings.php
+	fi
+
+	# If the images directory only contains a README, then link it to
+	# $SHARED/images, creating the shared directory if necessary
+	if [ "$(ls images)" = "README" -a ! -L images ]; then
+		rm -fr images
+		mkdir -p "$SHARED/images"
+		ln -s "$SHARED/images" images
+	fi
+fi
 
 : ${MEDIAWIKI_DB_HOST:=${MYSQL_PORT_3306_TCP#tcp://}}
 
