@@ -2,6 +2,8 @@
 
 set -e
 
+: ${MEDIAWIKI_SITE_NAME:=MediaWiki}
+
 if [ -z "$MEDIAWIKI_DB_HOST" -a -z "$MYSQL_PORT_3306_TCP" ]; then
 	echo >&2 'error: missing MYSQL_PORT_3306_TCP environment variable'
 	echo >&2 '  Did you forget to --link some_mysql_container:mysql ?'
@@ -86,5 +88,7 @@ $mysql->close();
 EOPHP
 
 chown -R www-data: .
+
+export MEDIAWIKI_SITE_NAME MEDIAWIKI_DB_HOST MEDIAWIKI_DB_USER MEDIAWIKI_DB_PASSWORD MEDIAWIKI_DB_NAME
 
 exec "$@"
