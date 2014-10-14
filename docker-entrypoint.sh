@@ -51,16 +51,16 @@ fi
 if [ -d "$MEDIAWIKI_SHARED" ]; then
 	# If there is no LocalSettings.php but we have one under the shared
 	# directory, symlink it
-	if [ -e "$SHARED/LocalSettings.php" -a ! -e LocalSettings.php ]; then
-		ln -s "$SHARED/LocalSettings.php" LocalSettings.php
+	if [ -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -e LocalSettings.php ]; then
+		ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
 	fi
 
 	# If the images directory only contains a README, then link it to
-	# $SHARED/images, creating the shared directory if necessary
+	# $MEDIAWIKI_SHARED/images, creating the shared directory if necessary
 	if [ "$(ls images)" = "README" -a ! -L images ]; then
 		rm -fr images
-		mkdir -p "$SHARED/images"
-		ln -s "$SHARED/images" images
+		mkdir -p "$MEDIAWIKI_SHARED/images"
+		ln -s "$MEDIAWIKI_SHARED/images" images
 	fi
 fi
 
