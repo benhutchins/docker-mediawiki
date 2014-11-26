@@ -33,7 +33,7 @@ if ! [ -e index.php -a -e includes/DefaultSettings.php ]; then
 		echo >&2 "WARNING: $(pwd) is not empty - press Ctrl+C now if this is an error!"
 		( set -x; ls -A; sleep 10 )
 	fi
-	rsync --archive --one-file-system --quiet /usr/src/mediawiki/ ./
+	tar cf - --one-file-system -C /usr/src/mediawiki . | tar xf -
 	echo >&2 "Complete! MediaWiki has been successfully copied to $(pwd)"
 	if [ ! -e .htaccess ]; then
 		cat > .htaccess <<-'EOF'
