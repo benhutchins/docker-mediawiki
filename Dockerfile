@@ -17,11 +17,11 @@ RUN docker-php-ext-install mysqli opcache
 RUN pecl install intl && \
     echo extension=intl.so >> /usr/local/etc/php/conf.d/ext-intl.ini
 
+RUN a2enmod rewrite
+
 RUN mkdir -p /usr/src/mediawiki && \
     curl -sSL https://releases.wikimedia.org/mediawiki/$MEDIAWIKI_VERSION/mediawiki-$MEDIAWIKI_FULL_VERSION.tar.gz | \
     tar --strip-components=1 -xzC /usr/src/mediawiki
-
-RUN a2enmod rewrite
 
 COPY docker-entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
