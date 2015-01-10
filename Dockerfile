@@ -14,6 +14,10 @@ RUN apt-get update && \
 
 RUN docker-php-ext-install mysqli opcache
 
+RUN apt-get update && \
+    apt-get install -y imagemagick && \
+    rm -rf /var/run/apt/lists/*
+
 RUN pecl install intl && \
     echo extension=intl.so >> /usr/local/etc/php/conf.d/ext-intl.ini
 
