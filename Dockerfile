@@ -8,7 +8,14 @@ WORKDIR /
 RUN rm -rf /var/www/html && mkdir /var/www/html
 WORKDIR /var/www/html
 
+RUN apt-get update && \
+    apt-get install -y g++ libicu-dev && \
+    rm -rf /var/run/apt/lists/*
+
 RUN docker-php-ext-install mysqli opcache
+
+RUN pecl install intl && \
+    echo extension=intl.so >> /usr/local/etc/php/conf.d/ext-intl.ini
 
 RUN mkdir -p /usr/src/mediawiki && \
     curl -sSL https://releases.wikimedia.org/mediawiki/$MEDIAWIKI_VERSION/mediawiki-$MEDIAWIKI_FULL_VERSION.tar.gz | \
