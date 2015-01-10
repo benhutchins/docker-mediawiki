@@ -4,10 +4,6 @@ MAINTAINER Synctree App Force <appforce+docker@synctree.com>
 ENV MEDIAWIKI_VERSION 1.23
 ENV MEDIAWIKI_FULL_VERSION 1.23.7
 
-WORKDIR /
-RUN rm -rf /var/www/html && mkdir /var/www/html
-WORKDIR /var/www/html
-
 RUN apt-get update && \
     apt-get install -y g++ libicu-dev && \
     rm -rf /var/run/apt/lists/*
