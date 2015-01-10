@@ -8,7 +8,7 @@ WORKDIR /
 RUN rm -rf /var/www/html && mkdir /var/www/html
 WORKDIR /var/www/html
 
-RUN docker-php-ext-install mysqli
+RUN docker-php-ext-install mysqli opcache
 
 RUN mkdir -p /usr/src/mediawiki && \
     curl -sSL https://releases.wikimedia.org/mediawiki/$MEDIAWIKI_VERSION/mediawiki-$MEDIAWIKI_FULL_VERSION.tar.gz | \
