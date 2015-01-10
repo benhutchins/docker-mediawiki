@@ -23,6 +23,9 @@ RUN mkdir -p /usr/src/mediawiki && \
     curl -sSL https://releases.wikimedia.org/mediawiki/$MEDIAWIKI_VERSION/mediawiki-$MEDIAWIKI_FULL_VERSION.tar.gz | \
     tar --strip-components=1 -xzC /usr/src/mediawiki
 
+COPY apache/mediawiki.conf /etc/apache2/
+RUN echo Include /etc/apache2/mediawiki.conf >> /etc/apache2/apache2.conf
+
 COPY docker-entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]

@@ -35,16 +35,6 @@ if ! [ -e index.php -a -e includes/DefaultSettings.php ]; then
 	fi
 	tar cf - --one-file-system -C /usr/src/mediawiki . | tar xf -
 	echo >&2 "Complete! MediaWiki has been successfully copied to $(pwd)"
-	if [ ! -e .htaccess ]; then
-		cat > .htaccess <<-'EOF'
-			RewriteEngine On
-			RewriteBase /
-			RewriteRule ^index\.php$ - [L]
-			RewriteCond %{REQUEST_FILENAME} !-f
-			RewriteCond %{REQUEST_FILENAME} !-d
-			RewriteRule . /index.php [L]
-		EOF
-	fi
 fi
 
 : ${MEDIAWIKI_SHARED:=/var/www-shared/html}
