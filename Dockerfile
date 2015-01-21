@@ -2,7 +2,7 @@ FROM php:5.6-apache
 MAINTAINER Synctree App Force <appforce+docker@synctree.com>
 
 ENV MEDIAWIKI_VERSION 1.23
-ENV MEDIAWIKI_FULL_VERSION 1.23.7
+ENV MEDIAWIKI_FULL_VERSION 1.23.8
 
 RUN apt-get update && \
     apt-get install -y g++ libicu52 libicu-dev && \
