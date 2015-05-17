@@ -37,48 +37,67 @@ if ! [ -e index.php -a -e includes/DefaultSettings.php ]; then
 	echo >&2 "Complete! MediaWiki has been successfully copied to $(pwd)"
 fi
 
+#
+# Generate symlinks to the following mediawiki data dirs:
+#
+#		images/
+#		extensions/
+#
+# and symlinks to the following mediawiki data files:
+#
+#		LocalSettings.php
+#		AdminSettings.php
+#
 : ${MEDIAWIKI_SHARED:=/var/www-shared/html}
-if [ -d "$MEDIAWIKI_SHARED" ]; then
-	# If there is no LocalSettings.php but we have one under the shared
-	# directory, symlink it
-	if [ -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -e LocalSettings.php ]; then
-		ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
-	fi
+if [[ -d "$MEDIAWIKI_SHARED" ]]; then
 
-	# If the images directory only contains a README, then link it to
-	# $MEDIAWIKI_SHARED/images, creating the shared directory if necessary
-	if [ "$(ls images)" = "README" -a ! -L images ]; then
-		rm -fr images
-		mkdir -p "$MEDIAWIKI_SHARED/images"
-		ln -s "$MEDIAWIKI_SHARED/images" images
-	fi
+	for dir in "images" "extensions"; do
+		if [[ ! -d "$MEDIAWIKI_SHARED/$dir" ]]; then 
+			mv "$dir" "$MEDIAWIKI_SHARED/$dir"
+		else
+			rm -rf "$dir"
+		fi
+		echo "Symlinking $dir to $MEDIAWIKI_SHARED/$dir"
+		ln -s "$MEDIAWIKI_SHARED/$dir" "$dir"
+	done
+
+	for file in "LocalSettings.php" "AdminSettings.php"; do
+		[[ ! -e "$MEDIAWIKI_SHARED/$file" ]] && touch "$MEDIAWIKI_SHARED/$file" \
+			|| [[ -e "$file" ]] && rm "$file"
+		echo "Symlinking $file to $MEDIAWIKI_SHARED/$file"
+		ln -s "$MEDIAWIKI_SHARED/$file" "$file"
+	done
+
 fi
 
+#
+# Create the mediawiki database if it doesn't exist
+#
 : ${MEDIAWIKI_DB_HOST:=${MYSQL_PORT_3306_TCP#tcp://}}
+mysql -u "${MEDIAWIKI_DB_USER}" \
+			-h "${MEDIAWIKI_DB_HOST}" \
+			--password="${MEDIAWIKI_DB_PASSWORD}" \
+			-e "CREATE DATABASE IF NOT EXISTS ${MEDIAWIKI_DB_NAME}"
 
-TERM=dumb php -- "$MEDIAWIKI_DB_HOST" "$MEDIAWIKI_DB_USER" "$MEDIAWIKI_DB_PASSWORD" "$MEDIAWIKI_DB_NAME" <<'EOPHP'
-<?php
-// database might not exist, so let's try creating it (just to be safe)
+if [[ -n "${MEDIAWIKI_MYSQL_DUMP}" && -e "${MEDIAWIKI_MYSQL_DUMP}" ]]; then
+	echo "Installing mysql dump from $MEDIAWIKI_MYSQL_DUMP"
+	mysql -u "${MEDIAWIKI_DB_USER}" \
+				-h "${MEDIAWIKI_DB_HOST}" \
+				--password="${MEDIAWIKI_DB_PASSWORD}" "${MEDIAWIKI_DB_NAME}" \
+				< "${MEDIAWIKI_MYSQL_DUMP}"
+fi
 
-list($host, $port) = explode(':', $argv[1], 2);
-$mysql = new mysqli($host, $argv[2], $argv[3], '', (int)$port);
-
-if ($mysql->connect_error) {
-	file_put_contents('php://stderr', 'MySQL Connection Error: (' . $mysql->connect_errno . ') ' . $mysql->connect_error . "\n");
-	exit(1);
-}
-
-if (!$mysql->query('CREATE DATABASE IF NOT EXISTS `' . $mysql->real_escape_string($argv[4]) . '`')) {
-	file_put_contents('php://stderr', 'MySQL "CREATE DATABASE" Error: ' . $mysql->error . "\n");
-	$mysql->close();
-	exit(1);
-}
-
-$mysql->close();
-EOPHP
+#
+# Run the maintenance/update.php script if specified
+#
+if [[ -n "${MEDIAWIKI_UPDATE_DB}" ]]; then
+	echo "Upgrading the database schema, this may take a few minutes..."
+	php maintenance/update.php
+fi 
 
 chown -R www-data: .
 
-export MEDIAWIKI_SITE_NAME MEDIAWIKI_DB_HOST MEDIAWIKI_DB_USER MEDIAWIKI_DB_PASSWORD MEDIAWIKI_DB_NAME
+export MEDIAWIKI_SITE_NAME MEDIAWIKI_DB_HOST MEDIAWIKI_DB_USER \
+			 MEDIAWIKI_DB_PASSWORD MEDIAWIKI_DB_NAME MEDIAWIKI_MYSQL_DUMP
 
 exec "$@"

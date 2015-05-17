@@ -22,7 +22,22 @@ RUN set -x; \
     && apt-get install -y --no-install-recommends imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
-RUN a2enmod rewrite
+RUN set -x; \
+    apt-get update \
+    && apt-get install -y mysql-client
+
+#
+# Install, configure, and enable the php5-ldap extension and it's
+# undocumented dependencies
+#
+RUN set -x; \
+    apt-get update \
+    && apt-get install -y --no-install-recommends libldb-dev libaprutil1-dev php5-ldap \
+    && ln -fs /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/ \
+    && docker-php-ext-configure ldap \
+    && docker-php-ext-install ldap
+
+RUN a2enmod rewrite && php5enmod ldap && service apache2 restart
 
 # https://www.mediawiki.org/keys/keys.txt
 RUN gpg --keyserver pool.sks-keyservers.net --recv-keys \
