@@ -19,6 +19,13 @@ MediaWiki instance:
  - `-e MEDIAWIKI_DB_PASSWORD=...` (defaults to the value of the
    `MYSQL_ROOT_PASSWORD` environment variable from the linked mysql container)
  - `-e MEDIAWIKI_DB_NAME=...` (defaults to "mediawiki")
+ - `-e MEDIAWIKI_SHARED=…` (defaults to /var/www/html; the path to the data directory to which the data directories/files should be symlinked.) Symlinked directories/files are:
+ 	- _images/_
+ 	- _extensions/_
+ 	- _LocalSettings.php_
+ 	- _AdminSettings.php_
+ - `-e MEDIAWIKI_UPDATE_DB=true` (runs the maintainer/update.php script to upgrade the database)
+
 
 If the `MEDIAWIKI_DB_NAME` specified does not already exist in the given MySQL
 container,  it will be created automatically upon container startup, provided
@@ -37,3 +44,7 @@ container's IP, standard port mappings can be used:
     docker run --name some-mediawiki --link some-mysql:mysql -p 8080:80 -d synctree/mediawiki
 
 Then, access it via `http://localhost:8080` or `http://host-ip:8080` in a browser.
+
+## LDAP Support
+
+Note that this image has php5-ldap support enabled. Simply add the MediaWiki LdapAuthentication extension to the _extensions/_ directory and configure the LocalSettings.php file with the applicable LdapAuthentication configurations.
