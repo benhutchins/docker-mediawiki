@@ -25,6 +25,7 @@ MediaWiki instance:
  	- _LocalSettings.php_
  	- _AdminSettings.php_
  - `-e MEDIAWIKI_UPDATE_DB=true` (runs the maintainer/update.php script to upgrade the database)
+ - `-e LDAP_SSL_CERT_DIR=…` (the directory containg the SSL Certificates that should be added to the Debian host's system-wide certificate trust store, per the [documentation for the LdapAuthentication extension](http://www.mediawiki.org/wiki/Extension:LDAP_Authentication/Requirements))
 
 
 If the `MEDIAWIKI_DB_NAME` specified does not already exist in the given MySQL

@@ -95,6 +95,25 @@ if [[ -n "${MEDIAWIKI_UPDATE_DB}" ]]; then
 	php maintenance/update.php
 fi 
 
+#
+# Add SSL certificate for communicating with an authentication backend
+# if required (such as for LDAPS authentication)
+#
+if [[ -n "${LDAP_SSL_CERT_DIR}" && -d "${LDAP_SSL_CERT_DIR}" ]]; then
+	cd "${LDAP_SSL_CERT_DIR}"
+	for cert in *.crt; do
+		echo "Adding ${cert} to the trusted certificates list"
+		cp "${cert}" /usr/local/share/ca-certificates	
+	done	
+	update-ca-certificates --fresh
+
+	# The default ldap.conf file actually keeps ldap clients from
+	# looking in the default certificate locations. To keep things
+	# simple, just disable the configuration file altogether
+	[[ -e etc/ldap/ldap.conf ]] && mv /etc/ldap/ldap.conf /etc/ldap/ldap.conf.bk
+	cd -
+fi
+
 chown -R www-data: .
 
 export MEDIAWIKI_SITE_NAME MEDIAWIKI_DB_HOST MEDIAWIKI_DB_USER \
