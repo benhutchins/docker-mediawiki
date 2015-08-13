@@ -10,7 +10,16 @@ others.
 
     docker run --name some-mediawiki --link some-mysql:mysql -v ./shared:/var/www-shared/html:rw -d benhutchins/mediawiki
 
-Or to run with [Docker Compose](https://docs.docker.com/compose/install/), you'll need to clone this repository and run:
+## Specify MediaWiki version
+
+To specify the version of MediaWiki you'd like to use, set both `MEDIAWIKI_VERSION` and `MEDIAWIKI_FULL_VERSION`.
+
+    -e MEDIAWIKI_VERSION=1.25
+    -e MEDIAWIKI_FULL_VERSION=1.25.2
+
+## Docker Compose
+
+To run with [Docker Compose](https://docs.docker.com/compose/install/), you'll need to clone this repository and run:
 
     docker-compose up
 
