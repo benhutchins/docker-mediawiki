@@ -1,0 +1,15 @@
+db:
+  image: mysql
+  command: tail -f /dev/null
+  environment:
+   - MYSQL_ROOT_PASSWORD=password
+web:
+  build: .
+  ports:
+   - 80:80
+  links:
+   - db
+  volumes:
+   - ./shared:/var/shared-www/html:rw
+  environment:
+   - MEDIAWIKI_DB_PASSWORD=password
