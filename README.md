@@ -96,7 +96,13 @@ container's IP, standard port mappings can be used:
 
 Then, access it via `http://localhost:8080` or `http://host-ip:8080` in a browser.
 
+### Installation Wizard
+
+The first time you access your new MediaWiki instance, you'll be navigated through an installation wizard. The purpose of which is to setup the default database and to generate a configuration file, `LocalSettings.php`.
+
 After using the installation wizard, save a copy of the generated `LocalSettings.php` to your data volume (`-v /local/data/dir:/data:rw`).
+
+If you're using `--link` to connect with a database, you'll be requested to specify the database host, user, password and name. Run `exec some-mediawiki printenv | grep 'MYSQL\|DB\|POSTGRES'` to view the environmental variables relating to the linked database. The database user will not be included, for that use `root` or `postgres` depending on whether you're using mysql or postgres respsectively.
 
 ### Docker Machine
 
