@@ -11,14 +11,16 @@ RUN set -x; \
         g++ \
         libicu52 \
         libicu-dev \
+        libzip-dev \
         imagemagick \
     && pecl install intl \
     && echo extension=intl.so >> /usr/local/etc/php/conf.d/ext-intl.ini \
     && apt-get purge -y --auto-remove g++ libicu-dev \
+    && ln -fs /usr/lib/x86_64-linux-gnu/libzip.so /usr/lib/ \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable PHP modules, see https://github.com/docker-library/php/blob/master/docker-php-ext-install
-RUN docker-php-ext-install mysqli opcache
+RUN docker-php-ext-install mysqli zip opcache
 
 RUN a2enmod rewrite
 
