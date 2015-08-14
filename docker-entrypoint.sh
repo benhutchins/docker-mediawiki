@@ -4,7 +4,6 @@ set -e
 
 : ${MEDIAWIKI_SITE_NAME:=MediaWiki}
 : ${MEDIAWIKI_DB_TYPE:=mysql}
-: ${MEDIAWIKI_ENABLE_SSLL=false}
 
 if [ -z "$MEDIAWIKI_DB_HOST" ]; then
 	if [ -n "$MYSQL_PORT_3306_TCP_ADDR" ]; then
@@ -157,7 +156,7 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 		echo >&2 'warning: disabling ssl'
 		a2dismod ssl
 	fi
-elif [ MEDIAWIKI_ENABLE_SSL = true ]; then
+elif [ $MEDIAWIKI_ENABLE_SSL = true ]; then
 	echo >&2 'error: Detected MEDIAWIKI_ENABLE_SSL flag but found no data volume';
 	echo >&2 '	Did you forget to mount the volume with -v?'
 	exit 1
