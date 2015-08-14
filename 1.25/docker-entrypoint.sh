@@ -3,36 +3,50 @@
 set -e
 
 : ${MEDIAWIKI_SITE_NAME:=MediaWiki}
+: ${MEDIAWIKI_DB_TYPE:=mysql}
 
 if [ -z "$MEDIAWIKI_DB_HOST" ]; then
 	if [ -n "$MYSQL_PORT_3306_TCP_ADDR" ]; then
-		: ${MEDIAWIKI_DB_HOST:=${MYSQL_PORT_3306_TCP_ADDR}}
+		MEDIAWIKI_DB_HOST=$MYSQL_PORT_3306_TCP_ADDR
+	elif [ -n "$POSTGRES_PORT_5432_TCP_ADDR" ]; then
+		MEDIAWIKI_DB_TYPE=postgres
+		MEDIAWIKI_DB_HOST=$POSTGRES_PORT_5432_TCP_ADDR
 	elif [ -n "$DB_PORT_3306_TCP_ADDR" ]; then
-		: ${MEDIAWIKI_DB_HOST:=${DB_PORT_3306_TCP_ADDR}}
+		MEDIAWIKI_DB_HOST=$DB_PORT_3306_TCP_ADDR
 	else
 		echo >&2 'error: missing MEDIAWIKI_DB_HOST environment variable'
-		echo >&2 '  Did you forget to --link some_mysql_container:mysql ?'
+		echo >&2 '  Did you forget to --link your database?'
 		exit 1
 	fi
 fi
 
-# if we're linked to MySQL, and we're using the root user, and our linked
-# container has a default "root" password set up and passed through... :)
-: ${MEDIAWIKI_DB_USER:=root}
-if [ "$MEDIAWIKI_DB_USER" = 'root' -a -z "$MEDIAWIKI_DB_PASSWORD" ]; then
-	if [ -n "$MYSQL_ENV_MYSQL_ROOT_PASSWORD" ]; then
-		: ${MEDIAWIKI_DB_PASSWORD:=${MYSQL_ENV_MYSQL_ROOT_PASSWORD}}
-	elif [ -n "$DB_ENV_MYSQL_ROOT_PASSWORD" ]; then
-		: ${MEDIAWIKI_DB_PASSWORD:=${DB_ENV_MYSQL_ROOT_PASSWORD}}
+if [ -z "$MEDIAWIKI_DB_USER" ]; then
+	if [ "$MEDIAWIKI_DB_TYPE" = "mysql" ]; then
+		echo >&2 'info: missing MEDIAWIKI_DB_USER environment variable, defaulting to "root"'
+		MEDIAWIKI_DB_USER=root
+	elif [ "$MEDIAWIKI_DB_TYPE" = "postgres" ]; then
+		echo >&2 'info: missing MEDIAWIKI_DB_USER environment variable, defaulting to "postgres"'
+		MEDIAWIKI_DB_USER=postgres
+	else
+		echo >&2 'error: missing required MEDIAWIKI_DB_USER environment variable'
+		exit 1
 	fi
 fi
 
 if [ -z "$MEDIAWIKI_DB_PASSWORD" ]; then
-	echo >&2 'error: missing required MEDIAWIKI_DB_PASSWORD environment variable'
-	echo >&2 '  Did you forget to -e MEDIAWIKI_DB_PASSWORD=... ?'
-	echo >&2
-	echo >&2 '  (Also of interest might be MEDIAWIKI_DB_USER and MEDIAWIKI_DB_NAME.)'
-	exit 1
+	if [ -n "$MYSQL_ENV_MYSQL_ROOT_PASSWORD" ]; then
+		MEDIAWIKI_DB_PASSWORD=$MYSQL_ENV_MYSQL_ROOT_PASSWORD
+	elif [ -n "$POSTGRES_ENV_POSTGRES_PASSWORD" ]; then
+		MEDIAWIKI_DB_PASSWORD=$POSTGRES_ENV_POSTGRES_PASSWORD
+	elif [ -n "$DB_ENV_MYSQL_ROOT_PASSWORD" ]; then
+		MEDIAWIKI_DB_PASSWORD=$DB_ENV_MYSQL_ROOT_PASSWORD
+	else
+		echo >&2 'error: missing required MEDIAWIKI_DB_PASSWORD environment variable'
+		echo >&2 '  Did you forget to -e MEDIAWIKI_DB_PASSWORD=... ?'
+		echo >&2
+		echo >&2 '  (Also of interest might be MEDIAWIKI_DB_USER and MEDIAWIKI_DB_NAME)'
+		exit 1
+	fi
 fi
 
 : ${MEDIAWIKI_DB_NAME:=mediawiki}
@@ -40,38 +54,36 @@ fi
 if [ -z "$MEDIAWIKI_DB_PORT" ]; then
 	if [ -n "$MYSQL_PORT_3306_TCP_PORT" ]; then
 		: ${MEDIAWIKI_DB_PORT:=${MYSQL_PORT_3306_TCP_PORT}}
+	elif [ -n "$POSTGRES_PORT_5432_TCP_PORT" ]; then
+		: ${MEDIAWIKI_DB_PORT:=${POSTGRES_PORT_5432_TCP_PORT}}
 	elif [ -n "$DB_PORT_3306_TCP_PORT" ]; then
 		: ${MEDIAWIKI_DB_PORT:=${DB_PORT_3306_TCP_PORT}}
 	fi
 fi
 
-TERM=dumb php -- "$MEDIAWIKI_DB_HOST" "$MEDIAWIKI_DB_PORT" "$MEDIAWIKI_DB_USER" "$MEDIAWIKI_DB_PASSWORD" "$MEDIAWIKI_DB_NAME" <<'EOPHP'
+export MEDIAWIKI_SITE_NAME MEDIAWIKI_DB_TYPE MEDIAWIKI_DB_HOST MEDIAWIKI_DB_USER MEDIAWIKI_DB_PASSWORD MEDIAWIKI_DB_NAME
+
+TERM=dumb php -- <<'EOPHP'
 <?php
 // database might not exist, so let's try creating it (just to be safe)
 
-print_r($_ENV);
-print_r($argv);
+if ($_ENV['MEDIAWIKI_DB_TYPE'] == 'mysql') {
 
-$DB_HOST = $argv[1];
-$DB_PORT = $argv[2];
-$DB_USER = $argv[3];
-$DB_PASS = $argv[4];
-$DB_NAME = $argv[5];
+	$mysql = new mysqli($_ENV['MEDIAWIKI_DB_HOST'], $_ENV['MEDIAWIKI_DB_USER'], $_ENV['MEDIAWIKI_DB_PASSWORD'], '', (int) $_ENV['MEDIAWIKI_DB_PORT']);
 
-$mysql = new mysqli($DB_HOST, $DB_USER, $DB_PASS, '', (int) $DB_PORT);
+	if ($mysql->connect_error) {
+		file_put_contents('php://stderr', 'MySQL Connection Error: (' . $mysql->connect_errno . ') ' . $mysql->connect_error . "\n");
+		exit(1);
+	}
 
-if ($mysql->connect_error) {
-	file_put_contents('php://stderr', 'MySQL Connection Error: (' . $mysql->connect_errno . ') ' . $mysql->connect_error . "\n");
-	exit(1);
-}
+	if (!$mysql->query('CREATE DATABASE IF NOT EXISTS `' . $mysql->real_escape_string($_ENV['MEDIAWIKI_DB_NAME']) . '`')) {
+		file_put_contents('php://stderr', 'MySQL "CREATE DATABASE" Error: ' . $mysql->error . "\n");
+		$mysql->close();
+		exit(1);
+	}
 
-if (!$mysql->query('CREATE DATABASE IF NOT EXISTS `' . $mysql->real_escape_string($DB_NAME) . '`')) {
-	file_put_contents('php://stderr', 'MySQL "CREATE DATABASE" Error: ' . $mysql->error . "\n");
 	$mysql->close();
-	exit(1);
 }
-
-$mysql->close();
 EOPHP
 
 if ! [ -e index.php -a -e includes/DefaultSettings.php ]; then
@@ -105,7 +117,5 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 fi
 
 chown -R www-data: .
-
-export MEDIAWIKI_SITE_NAME MEDIAWIKI_DB_HOST MEDIAWIKI_DB_USER MEDIAWIKI_DB_PASSWORD MEDIAWIKI_DB_NAME
 
 exec "$@"
