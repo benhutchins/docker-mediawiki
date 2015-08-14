@@ -97,7 +97,7 @@ if ! [ -e index.php -a -e includes/DefaultSettings.php ]; then
 	echo >&2 "Complete! MediaWiki has been successfully copied to $(pwd)"
 fi
 
-: ${MEDIAWIKI_SHARED:=/var/www-shared/html}
+: ${MEDIAWIKI_SHARED:=/data}
 if [ -d "$MEDIAWIKI_SHARED" ]; then
 	# If there is no LocalSettings.php but we have one under the shared
 	# directory, symlink it

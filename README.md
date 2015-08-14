@@ -8,12 +8,12 @@ others.
 
 # How to use this image
 
-    docker run --name some-mediawiki --link some-mysql:mysql -v /var/shared:/var/www-shared/html:rw -d benhutchins/mediawiki
+    docker run --name some-mediawiki --link some-mysql:mysql -v /local/data/path:/data:rw -d benhutchins/mediawiki
 
 Partial explanation of arguments:
 
  - `--link` allows you to connect this container with a database container. See `Configure Database` below for more details.
- - `-v` is used to mount a shared folder with the container. If provided, you can place your `LocalSettings.php` inside this folder. All files and images uploaded to the wiki will also be placed within an `images` folder of this shared volume.
+ - `-v` is used to mount a shared folder with the container. If provided, you can place your `LocalSettings.php` inside this folder. All files and images uploaded to the wiki will also be placed within an `images` folder of this shared volume. By default the shared bath must be mounted to `/data` on the container, you can change this using by using `-e MEDIAWIKI_SHARED=/new/data/path`.
 
  Having troubling accessing your MediaWiki server? See `Accessing MediaWiki` below for help.
 
@@ -45,7 +45,7 @@ The example above uses `--link` to connect the MediaWiki container with a runnin
 
 You can use Postgres instead of MySQL as your database server using the `:latest-postgres` tag:
 
-    docker run --name some-mediawiki --link some-postgres:postgres -v /var/shared:/var/www-shared/html:rw -d benhutchins/mediawiki:postgres
+    docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
 
 ### Using Database Server
 
@@ -81,6 +81,8 @@ container's IP, standard port mappings can be used:
     docker run --name some-mediawiki --link some-mysql:mysql -p 8080:80 -d benhutchins/mediawiki
 
 Then, access it via `http://localhost:8080` or `http://host-ip:8080` in a browser.
+
+After using the installation wizard, save a copy of the generated `LocalSettings.php` to your data volume (`-v /local/data/dir:/data:rw`).
 
 ### Docker Machine
 

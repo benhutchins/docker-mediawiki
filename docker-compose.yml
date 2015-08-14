@@ -10,6 +10,6 @@ web:
   links:
    - db
   # volumes:
-  #  - /var/docker-shares/mediawiki:/var/shared-www/html:rw
+  #  - /local/data/dir:/data:rw
   environment:
    - MEDIAWIKI_DB_PASSWORD=password
