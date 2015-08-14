@@ -13,7 +13,7 @@ others.
 Partial explanation of arguments:
 
  - `--link` allows you to connect this container with a database container. See `Configure Database` below for more details.
- - `-v` is used to mount a shared folder with the container. If provided, you can place your `LocalSettings.php` inside this folder. All files and images uploaded to the wiki will also be placed within an `images` folder of this shared volume. By default the shared bath must be mounted to `/data` on the container, you can change this using by using `-e MEDIAWIKI_SHARED=/new/data/path`.
+ - `-v` is used to mount a shared folder with the container. See `Shared Volume` below for more details.
 
  Having troubling accessing your MediaWiki server? See `Accessing MediaWiki` below for help.
 
@@ -76,6 +76,16 @@ To use with an external database server, use `MEDIAWIKI_DB_HOST` (along with
         -e MEDIAWIKI_DB_USER=app \
         -e MEDIAWIKI_DB_PASSWORD=secure \
         benhutchins/mediawiki
+
+## Shared Volume
+
+If provided mount a shared volume using the `-v` argument when running `docker run`, the mediawiki container will automatically look for a `LocalSettings.php` file and `images`, `skins` and `extensions` folders. When found symbolic links will be automatically created to the respsective file or folder to replace the ones included with the default MediaWiki install. This allows you to easily configure (`LocalSettings.php`), backup uploaded files (`images`), and customize (`skins` and `extensions`) your instance of MediaWiki.
+
+It is highly recommend you mount a shared volume so uploaded files and images will be outside of the docker container.
+
+By default the shared volume must be mounted to `/data` on the container, you can change this using by using `-e MEDIAWIKI_SHARED=/new/data/path`.
+
+Additionally if a `composer.lock` **and** a `composer.json` are detected, the container will automatically download [composer](https://getcomposer.org) and run `composer install`. Composer can be used to install additional extensions, skins and dependencies.
 
 ## Accessing MediaWiki
 
