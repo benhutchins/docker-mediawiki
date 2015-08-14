@@ -8,7 +8,9 @@ others.
 
 # How to use this image
 
-    docker run --name some-mediawiki --link some-mysql:mysql -v ./shared:/var/www-shared/html:rw -d benhutchins/mediawiki
+    docker run --name some-mediawiki --link some-mysql:mysql -v /var/shared:/var/www-shared/html:rw -d benhutchins/mediawiki
+
+Here `-v` is used to mount a shared folder with the container. If provided, you can place your `LocalSettings.php` inside this folder. All files and images uploaded to the wiki will also be placed within an `images` folder of this shared volume.
 
 ## Specify MediaWiki version
 
@@ -20,13 +22,7 @@ To run with [Docker Compose](https://docs.docker.com/compose/install/), you'll n
 
     docker-compose up
 
-**Note** When using Docker Machine or boot2docker, you'll need to use an absolute path for the `shared` folder. Like:
-
-    docker run \
-        --name some-mediawiki \
-        --link some-mysql:mysql \
-        -v /Users/me/docker-mediawiki/1.25/shared/:/var/www-shared/html:rw \
-        benhutchins/mediawiki
+**Note** You'll likely want to uncomment the `docker-compose.yml` file's `volume` lines.
 
 ## Configure Database
 

@@ -9,7 +9,7 @@ web:
    - 80:80
   links:
    - db
-  volumes:
-   - ./shared:/var/shared-www/html:rw
+  # volumes:
+  #  - /var/docker-shares/mediawiki:/var/shared-www/html:rw
   environment:
    - MEDIAWIKI_DB_PASSWORD=password
