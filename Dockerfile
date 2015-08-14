@@ -1,7 +1,7 @@
 FROM php:5.6-apache
 MAINTAINER Benjamin Hutchins <ben@hutchins.co>
 
-ENV MEDIAWIKI_VERSION 1.25.2
+ENV MEDIAWIKI_VERSION 1.24.3
 
 EXPOSE 80 443
 
