@@ -14,6 +14,7 @@ RUN set -x; \
     && apt-get purge -y --auto-remove g++ libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Enable PHP modules, see https://github.com/docker-library/php/blob/master/docker-php-ext-install
 RUN docker-php-ext-install mysqli opcache
 
 RUN set -x; \
