@@ -17,6 +17,16 @@ Partial explanation of arguments:
 
  Having troubling accessing your MediaWiki server? See `Accessing MediaWiki` below for help.
 
+## Extra configuration options
+
+Use the following environmental variables to generate a `LocalSettings.php` and perform automatic installation of MediaWiki. If you don't include these, you'll need to go through the installation wizard. See `Installation Wizard` below for more details. Please see [Manual:Configuration_settings](https://www.mediawiki.org/wiki/Manual:Configuration_settings) for details about what these configuration variables do.
+
+ - `-e MEDIAWIKI_SITE_SERVER=` (**required** set this to the server host and include the protocol (and port if necessary) like `http://my-wiki:8080`; configures `$wgServer`)
+ - `-e MEDIAWIKI_SITE_NAME=` (defaults to `MediaWiki`; configures `$wgSitename`)
+ - `-e MEDIAWIKI_SITE_LANG=` (defaults to `en`; configures `$wgLanguageCode`)
+ - `-e MEDIAWIKI_ADMIN_USER=` (defaults to `admin`; configures default administrator username)
+ - `-e MEDIAWIKI_ADMIN_PASS=` (defaults to `rosebud`; configures default administrator password)
+
 ## Specify MediaWiki version
 
 To specify the version of MediaWiki you'd like to install, use `-e MEDIAWIKI_VERSION=1.25.2`. As of writing this, `1.25.2` was the latest stable release. Or you can use one of the built containers using that version:
@@ -126,3 +136,5 @@ And access your instance of MediaWiki at:
 ## Enabling SSL/TLS/HTTPS
 
 To enable SSL on your server, place your certificate files inside your mounted share volume as `ssl.key`, `ssl.crt` and `ssl.bundle.crt`.  Then add `-e MEDIAWIKI_ENABLE_SSL=true` to your `docker run` command. This will enable the ssl module for Apache and force your instance of mediawik to SSL-only, redirecting all requests from port 80 (http) to 443 (https). Also be sure to include [`-P` or `-p 443:443`](https://docs.docker.com/reference/run/#expose-incoming-ports) in your `docker run` command.
+
+**Note** When enabling SSL, you must update the `$wgServer` in your `LocalSettings.php` to include `https://` as the prefix. If using automatic install, update the `MEDIAWIKI_SITE_SERVER` environmental variable.

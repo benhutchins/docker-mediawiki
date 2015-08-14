@@ -2,6 +2,10 @@
 
 set -e
 
+: ${MEDIAWIKI_SITE_NAME:=MediaWiki}
+: ${MEDIAWIKI_SITE_LANG:=en}
+: ${MEDIAWIKI_ADMIN_USER:=admin}
+: ${MEDIAWIKI_ADMIN_PASS:=rosebud}
 : ${MEDIAWIKI_DB_TYPE:=mysql}
 
 if [ -z "$MEDIAWIKI_DB_HOST" ]; then
@@ -159,6 +163,26 @@ elif [ $MEDIAWIKI_ENABLE_SSL = true ]; then
 	echo >&2 'error: Detected MEDIAWIKI_ENABLE_SSL flag but found no data volume';
 	echo >&2 '	Did you forget to mount the volume with -v?'
 	exit 1
+fi
+
+# If there is no LocalSettings.php, create one using maintenance/install.php
+if [ ! -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
+	php maintenance/install.php \
+		--confpath /var/www/html \
+		--dbname "$MEDIAWIKI_DB_NAME" \
+		--dbport "$MEDIAWIKI_DB_PORT" \
+		--dbserver "$MEDIAWIKI_DB_HOST" \
+		--dbtype "$MEDIAWIKI_DB_TYPE" \
+		--dbuser "$MEDIAWIKI_DB_USER" \
+		--dbpass "$MEDIAWIKI_DB_PASSWORD" \
+		--installdbuser "$MEDIAWIKI_DB_USER" \
+		--installdbpass "$MEDIAWIKI_DB_PASSWORD" \
+		--server "$MEDIAWIKI_SITE_SERVER" \
+		--scriptpath "" \
+		--lang "$MEDIAWIKI_SITE_LANG" \
+		--pass "$MEDIAWIKI_ADMIN_PASS" \
+		"$MEDIAWIKI_SITE_NAME" \
+		"$MEDIAWIKI_ADMIN_USER"
 fi
 
 # If LocalSettings.php exists, then attempt to run the update.php maintenance
