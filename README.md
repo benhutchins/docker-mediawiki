@@ -33,6 +33,8 @@ To run with [Docker Compose](https://docs.docker.com/compose/install/), you'll n
 
     docker-compose up
 
+Currently the `docker-compose.yml` is configured to run against `Dockerfile`, which means that it will install MediaWiki version `1.25.2`.
+
 **Note** You'll likely want to uncomment the `docker-compose.yml` file's `volume` lines.
 
 ## Configure Database
