@@ -117,3 +117,7 @@ If you're using boot2docker, using `http://localhost:8080` won't work, instead y
 And access your instance of MediaWiki at:
 
     http://$(boot2docker ip):8080/
+
+## Enabling SSL/TLS/HTTPS
+
+To enable SSL on your server, place your certificate files inside your mounted share volume as `ssl.key`, `ssl.crt` and `ssl.bundle.crt`.  Then add `-e MEDIAWIKI_ENABLE_SSL=true` to your `docker run` command. This will enable the ssl module for Apache and force your instance of mediawik to SSL-only, redirecting all requests from port 80 (http) to 443 (https). Also be sure to include [`-P` or `-p 443:443`](https://docs.docker.com/reference/run/#expose-incoming-ports) in your `docker run` command.

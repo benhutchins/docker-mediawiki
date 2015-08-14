@@ -3,6 +3,8 @@ MAINTAINER Benjamin Hutchins <ben@hutchins.co>
 
 ENV MEDIAWIKI_VERSION 1.25.2
 
+EXPOSE 80 443
+
 RUN set -x; \
     apt-get update \
     && apt-get install -y --no-install-recommends \
