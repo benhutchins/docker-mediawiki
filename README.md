@@ -47,7 +47,7 @@ The example above uses `--link` to connect the MediaWiki container with a runnin
 
 ### Using Postgres
 
-You can use Postgres instead of MySQL as your database server using the `:latest-postgres` tag:
+You can use Postgres instead of MySQL as your database server using the `:postgres` tag:
 
     docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
 
