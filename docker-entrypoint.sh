@@ -15,7 +15,7 @@ if [ -z "$MEDIAWIKI_DB_HOST" ]; then
 		MEDIAWIKI_DB_HOST=$DB_PORT_3306_TCP_ADDR
 	else
 		echo >&2 'error: missing MEDIAWIKI_DB_HOST environment variable'
-		echo >&2 '  Did you forget to --link your database?'
+		echo >&2 '	Did you forget to --link your database?'
 		exit 1
 	fi
 fi
@@ -42,9 +42,9 @@ if [ -z "$MEDIAWIKI_DB_PASSWORD" ]; then
 		MEDIAWIKI_DB_PASSWORD=$DB_ENV_MYSQL_ROOT_PASSWORD
 	else
 		echo >&2 'error: missing required MEDIAWIKI_DB_PASSWORD environment variable'
-		echo >&2 '  Did you forget to -e MEDIAWIKI_DB_PASSWORD=... ?'
+		echo >&2 '	Did you forget to -e MEDIAWIKI_DB_PASSWORD=... ?'
 		echo >&2
-		echo >&2 '  (Also of interest might be MEDIAWIKI_DB_USER and MEDIAWIKI_DB_NAME)'
+		echo >&2 '	(Also of interest might be MEDIAWIKI_DB_USER and MEDIAWIKI_DB_NAME)'
 		exit 1
 	fi
 fi
@@ -123,16 +123,16 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 	# /var/www/html/extensions is not already a symbolic link, then replace it
 	if [ -d "$MEDIAWIKI_SHARED/extensions" -a ! -h /var/www/html/extensions ]; then
 		echo >&2 "Found 'extensions' folder in data volume, creating symbolic link."
-	    rm -rf /var/www/html/extensions
-	    ln -s "$MEDIAWIKI_SHARED/extensions" /var/www/html/extensions
+		rm -rf /var/www/html/extensions
+		ln -s "$MEDIAWIKI_SHARED/extensions" /var/www/html/extensions
 	fi
 
 	# If a skins folder exists inside the shared directory, as long as
 	# /var/www/html/skins is not already a symbolic link, then replace it
 	if [ -d "$MEDIAWIKI_SHARED/skins" -a ! -h /var/www/html/skins ]; then
 		echo >&2 "Found 'skins' folder in data volume, creating symbolic link."
-	    rm -rf /var/www/html/skins
-	    ln -s "$MEDIAWIKI_SHARED/skins" /var/www/html/skins
+		rm -rf /var/www/html/skins
+		ln -s "$MEDIAWIKI_SHARED/skins" /var/www/html/skins
 	fi
 
 	# If a composer.lock and composer.json file exist, use them to install
