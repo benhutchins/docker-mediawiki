@@ -1,8 +1,7 @@
 FROM php:5.6-apache
 MAINTAINER Synctree App Force <appforce+docker@synctree.com>
 
-ENV MEDIAWIKI_VERSION 1.25
-ENV MEDIAWIKI_FULL_VERSION 1.25.2
+ENV MEDIAWIKI_VERSION 1.25.2
 
 RUN set -x; \
     apt-get update \
@@ -33,7 +32,8 @@ RUN gpg --keyserver pool.sks-keyservers.net --recv-keys \
     3CEF8262806D3F0B6BA1DBDD7956EE477F901A30 \
     280DB7845A1DCAC92BB5A00A946B02565DC00AA7
 
-RUN MEDIAWIKI_DOWNLOAD_URL="https://releases.wikimedia.org/mediawiki/$MEDIAWIKI_VERSION/mediawiki-$MEDIAWIKI_FULL_VERSION.tar.gz"; \
+RUN MW_VER_MAJOR_PLUS_MINOR=$(php -r '$parts=explode(".", $_ENV["MEDIAWIKI_VERSION"], 3); echo "{$parts[0]}.{$parts[1]}";'); \
+    MEDIAWIKI_DOWNLOAD_URL="https://releases.wikimedia.org/mediawiki/$MW_VER_MAJOR_PLUS_MINOR/mediawiki-$MEDIAWIKI_VERSION.tar.gz"; \
     set -x; \
     mkdir -p /usr/src/mediawiki \
     && curl -fSL "$MEDIAWIKI_DOWNLOAD_URL" -o mediawiki.tar.gz \

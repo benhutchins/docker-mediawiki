@@ -12,10 +12,7 @@ others.
 
 ## Specify MediaWiki version
 
-To specify the version of MediaWiki you'd like to use, set both `MEDIAWIKI_VERSION` and `MEDIAWIKI_FULL_VERSION`.
-
-    -e MEDIAWIKI_VERSION=1.25
-    -e MEDIAWIKI_FULL_VERSION=1.25.2
+To specify the version of MediaWiki you'd like to install, use `-e MEDIAWIKI_VERSION=1.25.2`. As of writing this, `1.25.2` was the latest stable release.
 
 ## Docker Compose
 
