@@ -134,6 +134,15 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 	    rm -rf /var/www/html/skins
 	    ln -s "$MEDIAWIKI_SHARED/skins" /var/www/html/skins
 	fi
+
+	# If a composer.lock and composer.json file exist, use them to install
+	# dependencies for MediaWiki and desired extensions, skins, etc.
+	if [ -e "$MEDIAWIKI_SHARED/composer.lock" -a -e "$MEDIAWIKI_SHARED/composer.json" ]; then
+		curl -sS https://getcomposer.org/installer | php
+		cp "$MEDIAWIKI_SHARED/composer.lock" composer.lock
+		cp "$MEDIAWIKI_SHARED/composer.json" composer.json
+		php composer.phar install
+	fi
 fi
 
 chown -R www-data: .
