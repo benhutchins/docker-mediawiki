@@ -118,6 +118,14 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 		mkdir -p "$MEDIAWIKI_SHARED/images"
 		ln -s "$MEDIAWIKI_SHARED/images" images
 	fi
+
+	# If a skins folder exists inside the shared directory, as long as
+	# /var/www/html/skins is not already a symbolic link, then replace it
+	if [ -d "$MEDIAWIKI_SHARED/skins" -a ! -h /var/www/html/skins ]; then
+		echo >&2 "Found 'skins' folder in data volume, creating symbolic link."
+	    rm -rf /var/www/html/skins
+	    ln -s "$MEDIAWIKI_SHARED/skins" /var/www/html/skins
+	fi
 fi
 
 chown -R www-data: .
