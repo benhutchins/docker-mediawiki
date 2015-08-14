@@ -9,7 +9,7 @@ docker rmi benhutchins/mediawiki:postgres
 docker rmi benhutchins/mediawiki:latest
 
 echo "${bold}Building with MediaWiki 1.25${normal}"
-docker build -t benhutchins/mediawiki:1.25 -f Dockerfile .
+docker build -t benhutchins/mediawiki:1.25 -f Dockerfile-1.25 .
 
 echo "${bold}Building with MediaWiki 1.24${normal}"
 docker build -t benhutchins/mediawiki:1.24 -f Dockerfile-1.24 .
