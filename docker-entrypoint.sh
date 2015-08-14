@@ -195,5 +195,6 @@ if [ -e "LocalSettings.php" -a $MEDIAWIKI_NO_UPDATE != true ]; then
 fi
 
 chown -R www-data: .
+chmod 755 images
 
 exec "$@"
