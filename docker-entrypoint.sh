@@ -166,7 +166,8 @@ fi
 # script. If already up to date, it won't do anything, otherwise it will
 # migrate the database if necessary on container startup. It also will
 # verify the database connection is working.
-if [ -e "LocalSettings.php" ]; then
+if [ -e "LocalSettings.php" -a $MEDIAWIKI_NO_UPDATE != true ]; then
+	echo >&2 'info: Running maintenance/update.php automatically, skip this with --e MEDIAWIKI_NO_UPDATE=true';
 	php maintenance/update.php
 fi
 
