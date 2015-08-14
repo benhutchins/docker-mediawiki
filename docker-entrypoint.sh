@@ -145,6 +145,14 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 	fi
 fi
 
+# If LocalSettings.php exists, then attempt to run the update.php maintenance
+# script. If already up to date, it won't do anything, otherwise it will
+# migrate the database if necessary on container startup. It also will
+# verify the database connection is working.
+if [ -e "LocalSettings.php" ]; then
+	php maintenance/update.php
+fi
+
 chown -R www-data: .
 
 exec "$@"
