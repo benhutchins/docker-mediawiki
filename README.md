@@ -21,11 +21,11 @@ Partial explanation of arguments:
 
 To specify the version of MediaWiki you'd like to install, use `-e MEDIAWIKI_VERSION=1.25.2`. As of writing this, `1.25.2` was the latest stable release. Or you can use one of the built containers using that version:
 
- - benhutchins/mediawiki:1.23 (uses `1.23.10`, official Long Term Support by [MediaWiki](https://www.mediawiki.org/wiki/MediaWiki))
- - benhutchins/mediawiki:1.24 (uses `1.24.3`)
- - benhutchins/mediawiki:1.25 (uses `1.25.2`)
- - benhutchins/mediawiki:latest (currently uses `1.25.2`)
- - benhutchins/mediawiki:postgres (currently uses `1.25.2`, and installs the `postgres` php module)
+ - `benhutchins/mediawiki:1.23` (uses `1.23.10`, official Long Term Support by [MediaWiki](https://www.mediawiki.org/wiki/MediaWiki))
+ - `benhutchins/mediawiki:1.24` (uses `1.24.3`)
+ - `benhutchins/mediawiki:1.25` (uses `1.25.2`)
+ - `benhutchins/mediawiki:latest` (currently uses `1.25.2`)
+ - `benhutchins/mediawiki:postgres` (currently uses `1.25.2`, and installs the `postgres` php module)
 
 ## Docker Compose
 
