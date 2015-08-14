@@ -10,7 +10,12 @@ others.
 
     docker run --name some-mediawiki --link some-mysql:mysql -v /var/shared:/var/www-shared/html:rw -d benhutchins/mediawiki
 
-Here `-v` is used to mount a shared folder with the container. If provided, you can place your `LocalSettings.php` inside this folder. All files and images uploaded to the wiki will also be placed within an `images` folder of this shared volume.
+Partial explanation of arguments:
+
+ - `--link` allows you to connect this container with a database container. See `Configure Database` below for more details.
+ - `-v` is used to mount a shared folder with the container. If provided, you can place your `LocalSettings.php` inside this folder. All files and images uploaded to the wiki will also be placed within an `images` folder of this shared volume.
+
+ Having troubling accessing your MediaWiki server? See `Accessing MediaWiki` below for help.
 
 ## Specify MediaWiki version
 
@@ -26,8 +31,9 @@ To run with [Docker Compose](https://docs.docker.com/compose/install/), you'll n
 
 ## Configure Database
 
-The following environment variables are also honored for configuring your
-MediaWiki instance:
+The example above uses `--link` to connect the MediaWiki container with a running [mysql](https://hub.docker.com/_/mysql/) container. This is probably not the best idea for use in production, keeping data in docker containers can be dangerous.
+
+You can use the following environment variables for connecting to another database server:
 
  - `-e MEDIAWIKI_DB_HOST=...` (defaults to the address of the linked database container)
  - `-e MEDIAWIKI_DB_PORT=...` (defaults to the port of the linked database container)
@@ -35,8 +41,8 @@ MediaWiki instance:
  - `-e MEDIAWIKI_DB_PASSWORD=...` (defaults to the password of the linked mysql container)
  - `-e MEDIAWIKI_DB_NAME=...` (defaults to "mediawiki")
 
-If the `MEDIAWIKI_DB_NAME` specified does not already exist in the given MySQL
-container,  it will be created automatically upon container startup, provided
+If the `MEDIAWIKI_DB_NAME` specified does not already exist on the provided MySQL
+server, it will be created automatically upon container startup, provided
 that the `MEDIAWIKI_DB_USER` specified has the necessary permissions to create
 it.
 
