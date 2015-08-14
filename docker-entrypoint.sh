@@ -183,6 +183,12 @@ if [ ! -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER"
 		--pass "$MEDIAWIKI_ADMIN_PASS" \
 		"$MEDIAWIKI_SITE_NAME" \
 		"$MEDIAWIKI_ADMIN_USER"
+
+		# If we have a mounted share volume, move the LocalSettings.php to it
+		# so it can be restored if this container needs to be reinitiated
+		if [ -d "$MEDIAWIKI_SHARED" ]; then
+			cp LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
+		fi
 fi
 
 # If LocalSettings.php exists, then attempt to run the update.php maintenance
