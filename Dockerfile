@@ -38,7 +38,8 @@ RUN MW_VER_MAJOR_PLUS_MINOR=$(php -r '$parts=explode(".", $_ENV["MEDIAWIKI_VERSI
     && curl -fSL "$MEDIAWIKI_DOWNLOAD_URL" -o mediawiki.tar.gz \
     && curl -fSL "${MEDIAWIKI_DOWNLOAD_URL}.sig" -o mediawiki.tar.gz.sig \
     && gpg --verify mediawiki.tar.gz.sig \
-    && tar -xf mediawiki.tar.gz -C /usr/src/mediawiki --strip-components=1
+    && tar -xf mediawiki.tar.gz -C /usr/src/mediawiki --strip-components=1 \
+    && rm -f mediawiki.tar.gz mediawiki.tar.gz.sig
 
 COPY php.ini /usr/local/etc/php/conf.d/mediawiki.ini
 
