@@ -42,6 +42,7 @@ RUN MW_VER_MAJOR_PLUS_MINOR=$(php -r '$parts=explode(".", $_ENV["MEDIAWIKI_VERSI
     && gpg --verify mediawiki.tar.gz.sig \
     && tar -xf mediawiki.tar.gz -C /usr/src/mediawiki --strip-components=1
 
+COPY php.ini /usr/local/etc/php/conf.d/mediawiki.ini
 
 COPY apache/mediawiki.conf /etc/apache2/
 RUN echo "Include /etc/apache2/mediawiki.conf" >> /etc/apache2/apache2.conf
