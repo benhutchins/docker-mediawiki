@@ -1,12 +1,14 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-echo "${bold}Removing old images${normal}"
-docker rmi benhutchins/mediawiki:1.25
-docker rmi benhutchins/mediawiki:1.24
-docker rmi benhutchins/mediawiki:1.23
-docker rmi benhutchins/mediawiki:postgres
-docker rmi benhutchins/mediawiki:latest
+if [ "$1" == "--rmis" ]; then
+  echo "${bold}Removing old images${normal}"
+  docker rmi benhutchins/mediawiki:1.25
+  docker rmi benhutchins/mediawiki:1.24
+  docker rmi benhutchins/mediawiki:1.23
+  docker rmi benhutchins/mediawiki:postgres
+  docker rmi benhutchins/mediawiki:latest
+fi
 
 echo "${bold}Building with MediaWiki 1.25${normal}"
 docker build -t benhutchins/mediawiki:1.25 -f Dockerfile-1.25 .
