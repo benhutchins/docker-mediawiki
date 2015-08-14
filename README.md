@@ -27,6 +27,10 @@ To specify the version of MediaWiki you'd like to install, use `-e MEDIAWIKI_VER
  - `benhutchins/mediawiki:latest` (currently uses `1.25.2`)
  - `benhutchins/mediawiki:postgres` (currently uses `1.25.2`, and installs the `postgres` php module)
 
+To use one of these pre-built containers, simply specify the tag as part of the `docker run` command:
+
+    docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
+
 ## Docker Compose
 
 To run with [Docker Compose](https://docs.docker.com/compose/install/), you'll need to clone this repository and run:
