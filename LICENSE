@@ -1,4 +1,7 @@
-Copyright 2014 Synctree, Inc.
+Original work by Synctree, Inc. and available at:
+https://github.com/synctree/docker-mediawiki
+
+Copyright 2015 Benjamin Hutchins
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
