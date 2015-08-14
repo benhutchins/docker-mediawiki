@@ -37,7 +37,7 @@ RUN set -x; \
     && docker-php-ext-configure ldap \
     && docker-php-ext-install ldap
 
-RUN a2enmod rewrite && php5enmod ldap && service apache2 restart
+RUN a2enmod rewrite && php5enmod ldap
 
 # https://www.mediawiki.org/keys/keys.txt
 RUN gpg --keyserver pool.sks-keyservers.net --recv-keys \
