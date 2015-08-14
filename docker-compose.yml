@@ -1,8 +1,8 @@
 db:
-  image: mysql
+  image: postgres
   command: tail -f /dev/null
   environment:
-   - MYSQL_ROOT_PASSWORD=password
+   - POSTGRES_PASSWORD=password
 web:
   build: .
   ports:
@@ -20,7 +20,7 @@ web:
   environment:
    - MEDIAWIKI_SITE_SERVER=//my-wiki
    - MEDIAWIKI_SITE_NAME=My Awesome Wiki
-   - MEDIAWIKI_DB_PASSWORD=password
+   - POSTGRES_PASSWORD=password
 
    # uncomment 'MEDIAWIKI_ENABLE_SSL' to enable SSL support
    # - MEDIAWIKI_ENABLE_SSL=true

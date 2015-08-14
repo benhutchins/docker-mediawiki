@@ -11,6 +11,7 @@ RUN set -x; \
         g++ \
         libicu52 \
         libicu-dev \
+        libpq-dev \
         imagemagick \
     && pecl install intl \
     && echo extension=intl.so >> /usr/local/etc/php/conf.d/ext-intl.ini \
@@ -18,7 +19,7 @@ RUN set -x; \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable PHP modules, see https://github.com/docker-library/php/blob/master/docker-php-ext-install
-RUN docker-php-ext-install mysqli opcache
+RUN docker-php-ext-install pgsql opcache
 
 RUN a2enmod rewrite
 
