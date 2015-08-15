@@ -175,7 +175,7 @@ elif [ $MEDIAWIKI_ENABLE_SSL = true ]; then
 fi
 
 # If there is no LocalSettings.php, create one using maintenance/install.php
-if [ ! -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
+if [ ! -e "LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
 	php maintenance/install.php \
 		--confpath /var/www/html \
 		--dbname "$MEDIAWIKI_DB_NAME" \
