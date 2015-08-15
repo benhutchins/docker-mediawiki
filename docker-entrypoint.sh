@@ -2,11 +2,18 @@
 
 set -e
 
+# Sleep because if --link was used, docker-compose, or similar
+# we need to give the database time to start up before we try to connect
+sleep 10
+
 : ${MEDIAWIKI_SITE_NAME:=MediaWiki}
 : ${MEDIAWIKI_SITE_LANG:=en}
 : ${MEDIAWIKI_ADMIN_USER:=admin}
 : ${MEDIAWIKI_ADMIN_PASS:=rosebud}
 : ${MEDIAWIKI_DB_TYPE:=mysql}
+
+: ${MEDIAWIKI_ENABLE_SSL:=false}
+: ${MEDIAWIKI_NO_UPDATE:=false}
 
 if [ -z "$MEDIAWIKI_DB_HOST" ]; then
 	if [ -n "$MYSQL_PORT_3306_TCP_ADDR" ]; then
@@ -109,9 +116,7 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 	# If there is no LocalSettings.php but we have one under the shared
 	# directory, symlink it
 	if [ -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -e LocalSettings.php ]; then
-		cp "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
-		# We need to copy it, instead of symlink because file permisisons break
-		# when trying to use Docker Machine
+		ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
 	fi
 
 	# If the images directory only contains a README, then link it to
@@ -138,13 +143,21 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 		ln -s "$MEDIAWIKI_SHARED/skins" /var/www/html/skins
 	fi
 
+	# If a vendor folder exists inside the shared directory, as long as
+	# /var/www/html/vendor is not already a symbolic link, then replace it
+	if [ -d "$MEDIAWIKI_SHARED/vendor" -a ! -h /var/www/html/vendor ]; then
+		echo >&2 "Found 'vendor' folder in data volume, creating symbolic link."
+		rm -rf /var/www/html/vendor
+		ln -s "$MEDIAWIKI_SHARED/vendor" /var/www/html/vendor
+	fi
+
 	# If a composer.lock and composer.json file exist, use them to install
 	# dependencies for MediaWiki and desired extensions, skins, etc.
 	if [ -e "$MEDIAWIKI_SHARED/composer.lock" -a -e "$MEDIAWIKI_SHARED/composer.json" ]; then
 		curl -sS https://getcomposer.org/installer | php
 		cp "$MEDIAWIKI_SHARED/composer.lock" composer.lock
 		cp "$MEDIAWIKI_SHARED/composer.json" composer.json
-		php composer.phar install
+		php composer.phar install --no-dev
 	fi
 
 	# Attempt to enable SSL support if explicitly requested
@@ -166,7 +179,7 @@ elif [ $MEDIAWIKI_ENABLE_SSL = true ]; then
 fi
 
 # If there is no LocalSettings.php, create one using maintenance/install.php
-if [ ! -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
+if [ ! -e "LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
 	php maintenance/install.php \
 		--confpath /var/www/html \
 		--dbname "$MEDIAWIKI_DB_NAME" \
@@ -187,7 +200,15 @@ if [ ! -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER"
 		# If we have a mounted share volume, move the LocalSettings.php to it
 		# so it can be restored if this container needs to be reinitiated
 		if [ -d "$MEDIAWIKI_SHARED" ]; then
-			cp LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
+			# Append inclusion of /data/CustomSettings.php
+			if [ -e "$MEDIAWIKI_SHARED/CustomSettings.php" ]; then
+				chown www-data: "$MEDIAWIKI_SHARED/CustomSettings.php"
+				echo "include('$MEDIAWIKI_SHARED/CustomSettings.php');" >> LocalSettings.php
+			fi
+
+			# Move generated LocalSettings.php to share volume
+			mv LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
+			ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
 		fi
 fi
 
