@@ -5,6 +5,9 @@ ENV MEDIAWIKI_VERSION 1.25.2
 
 EXPOSE 80 443
 
+# We use docker-php-ext-install to enable PHP modules,
+# @see https://github.com/docker-library/php/blob/master/docker-php-ext-install
+# Uses phpize underneath instead of perl.
 RUN set -x; \
     apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -13,14 +16,10 @@ RUN set -x; \
         libicu-dev \
         libzip-dev \
         imagemagick \
-    && pecl install intl \
-    && echo extension=intl.so >> /usr/local/etc/php/conf.d/ext-intl.ini \
-    && apt-get purge -y --auto-remove g++ libicu-dev \
     && ln -fs /usr/lib/x86_64-linux-gnu/libzip.so /usr/lib/ \
+    && docker-php-ext-install intl mysqli zip opcache \
+    && apt-get purge -y --auto-remove g++ libicu-dev libzip-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Enable PHP modules, see https://github.com/docker-library/php/blob/master/docker-php-ext-install
-RUN docker-php-ext-install mysqli zip opcache
 
 RUN a2enmod rewrite
 
