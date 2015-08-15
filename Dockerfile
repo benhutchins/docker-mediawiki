@@ -1,24 +1,28 @@
 FROM php:5.6-apache
 MAINTAINER Benjamin Hutchins <ben@hutchins.co>
 
+# Waiting in antiticipation for built-time arguments
+# https://github.com/docker/docker/issues/14634
 ENV MEDIAWIKI_VERSION 1.24.3
 
+# Add EXPOSE 443 because the php:apache only has EXPOSE 80
 EXPOSE 80 443
 
+# We use docker-php-ext-install to enable PHP modules,
+# @see https://github.com/docker-library/php/blob/master/docker-php-ext-install
+# Uses phpize underneath instead of perl.
 RUN set -x; \
     apt-get update \
     && apt-get install -y --no-install-recommends \
         g++ \
         libicu52 \
         libicu-dev \
+        libzip-dev \
         imagemagick \
-    && pecl install intl \
-    && echo extension=intl.so >> /usr/local/etc/php/conf.d/ext-intl.ini \
-    && apt-get purge -y --auto-remove g++ libicu-dev \
+    && ln -fs /usr/lib/x86_64-linux-gnu/libzip.so /usr/lib/ \
+    && docker-php-ext-install intl mysqli zip mbstring opcache \
+    && apt-get purge -y --auto-remove g++ libicu-dev libzip-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Enable PHP modules, see https://github.com/docker-library/php/blob/master/docker-php-ext-install
-RUN docker-php-ext-install mysqli opcache
 
 RUN a2enmod rewrite
 
@@ -38,7 +42,8 @@ RUN MW_VER_MAJOR_PLUS_MINOR=$(php -r '$parts=explode(".", $_ENV["MEDIAWIKI_VERSI
     && curl -fSL "$MEDIAWIKI_DOWNLOAD_URL" -o mediawiki.tar.gz \
     && curl -fSL "${MEDIAWIKI_DOWNLOAD_URL}.sig" -o mediawiki.tar.gz.sig \
     && gpg --verify mediawiki.tar.gz.sig \
-    && tar -xf mediawiki.tar.gz -C /usr/src/mediawiki --strip-components=1
+    && tar -xf mediawiki.tar.gz -C /usr/src/mediawiki --strip-components=1 \
+    && rm -f mediawiki.tar.gz mediawiki.tar.gz.sig
 
 COPY php.ini /usr/local/etc/php/conf.d/mediawiki.ini
 
