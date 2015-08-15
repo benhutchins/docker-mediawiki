@@ -2,6 +2,10 @@
 
 set -e
 
+# Sleep because if --link was used, docker-compose, or similar
+# we need to give the database time to start up before we try to connect
+sleep 10
+
 : ${MEDIAWIKI_SITE_NAME:=MediaWiki}
 : ${MEDIAWIKI_SITE_LANG:=en}
 : ${MEDIAWIKI_ADMIN_USER:=admin}
