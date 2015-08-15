@@ -144,7 +144,7 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 		curl -sS https://getcomposer.org/installer | php
 		cp "$MEDIAWIKI_SHARED/composer.lock" composer.lock
 		cp "$MEDIAWIKI_SHARED/composer.json" composer.json
-		php composer.phar install
+		php composer.phar install --no-dev
 	fi
 
 	# Attempt to enable SSL support if explicitly requested
