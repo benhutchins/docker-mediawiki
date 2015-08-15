@@ -1,6 +1,5 @@
 db:
   image: mysql
-  command: tail -f /dev/null
   environment:
    - MYSQL_ROOT_PASSWORD=password
 web:
