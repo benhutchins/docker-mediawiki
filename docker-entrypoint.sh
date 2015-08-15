@@ -8,6 +8,9 @@ set -e
 : ${MEDIAWIKI_ADMIN_PASS:=rosebud}
 : ${MEDIAWIKI_DB_TYPE:=mysql}
 
+: ${MEDIAWIKI_ENABLE_SSL:=false}
+: ${MEDIAWIKI_NO_UPDATE:=false}
+
 if [ -z "$MEDIAWIKI_DB_HOST" ]; then
 	if [ -n "$MYSQL_PORT_3306_TCP_ADDR" ]; then
 		MEDIAWIKI_DB_HOST=$MYSQL_PORT_3306_TCP_ADDR
