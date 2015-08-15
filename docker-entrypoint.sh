@@ -112,9 +112,7 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 	# If there is no LocalSettings.php but we have one under the shared
 	# directory, symlink it
 	if [ -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -e LocalSettings.php ]; then
-		cp "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
-		# We need to copy it, instead of symlink because file permisisons break
-		# when trying to use Docker Machine
+		ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
 	fi
 
 	# If the images directory only contains a README, then link it to
@@ -198,7 +196,15 @@ if [ ! -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER"
 		# If we have a mounted share volume, move the LocalSettings.php to it
 		# so it can be restored if this container needs to be reinitiated
 		if [ -d "$MEDIAWIKI_SHARED" ]; then
-			cp LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
+			# Append inclusion of /data/CustomSettings.php
+			if [ -e "$MEDIAWIKI_SHARED/CustomSettings.php" ]; then
+				chown www-data: "$MEDIAWIKI_SHARED/CustomSettings.php"
+				echo "include('$MEDIAWIKI_SHARED/CustomSettings.php');" >> LocalSettings.php
+			fi
+
+			# Move generated LocalSettings.php to share volume
+			mv LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
+			ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
 		fi
 fi
 
