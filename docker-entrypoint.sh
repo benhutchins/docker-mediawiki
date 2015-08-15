@@ -141,6 +141,14 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 		ln -s "$MEDIAWIKI_SHARED/skins" /var/www/html/skins
 	fi
 
+	# If a vendor folder exists inside the shared directory, as long as
+	# /var/www/html/vendor is not already a symbolic link, then replace it
+	if [ -d "$MEDIAWIKI_SHARED/vendor" -a ! -h /var/www/html/vendor ]; then
+		echo >&2 "Found 'vendor' folder in data volume, creating symbolic link."
+		rm -rf /var/www/html/vendor
+		ln -s "$MEDIAWIKI_SHARED/vendor" /var/www/html/vendor
+	fi
+
 	# If a composer.lock and composer.json file exist, use them to install
 	# dependencies for MediaWiki and desired extensions, skins, etc.
 	if [ -e "$MEDIAWIKI_SHARED/composer.lock" -a -e "$MEDIAWIKI_SHARED/composer.json" ]; then
