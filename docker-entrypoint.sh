@@ -13,7 +13,7 @@ sleep 10
 : ${MEDIAWIKI_DB_TYPE:=mysql}
 
 : ${MEDIAWIKI_ENABLE_SSL:=false}
-: ${MEDIAWIKI_NO_UPDATE:=false}
+: ${MEDIAWIKI_UPDATE:=false}
 
 if [ -z "$MEDIAWIKI_DB_HOST" ]; then
 	if [ -n "$MYSQL_PORT_3306_TCP_ADDR" ]; then
@@ -151,15 +151,6 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 		ln -s "$MEDIAWIKI_SHARED/vendor" /var/www/html/vendor
 	fi
 
-	# If a composer.lock and composer.json file exist, use them to install
-	# dependencies for MediaWiki and desired extensions, skins, etc.
-	if [ -e "$MEDIAWIKI_SHARED/composer.lock" -a -e "$MEDIAWIKI_SHARED/composer.json" ]; then
-		curl -sS https://getcomposer.org/installer | php
-		cp "$MEDIAWIKI_SHARED/composer.lock" composer.lock
-		cp "$MEDIAWIKI_SHARED/composer.json" composer.json
-		php composer.phar install --no-dev
-	fi
-
 	# Attempt to enable SSL support if explicitly requested
 	if [ $MEDIAWIKI_ENABLE_SSL = true ]; then
 		echo >&2 'info: enabling ssl'
@@ -212,12 +203,21 @@ if [ ! -e "LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
 		fi
 fi
 
+# If a composer.lock and composer.json file exist, use them to install
+# dependencies for MediaWiki and desired extensions, skins, etc.
+if [ -e "$MEDIAWIKI_SHARED/composer.lock" -a -e "$MEDIAWIKI_SHARED/composer.json" ]; then
+	curl -sS https://getcomposer.org/installer | php
+	cp "$MEDIAWIKI_SHARED/composer.lock" composer.lock
+	cp "$MEDIAWIKI_SHARED/composer.json" composer.json
+	php composer.phar install --no-dev
+fi
+
 # If LocalSettings.php exists, then attempt to run the update.php maintenance
 # script. If already up to date, it won't do anything, otherwise it will
 # migrate the database if necessary on container startup. It also will
 # verify the database connection is working.
-if [ -e "LocalSettings.php" -a $MEDIAWIKI_NO_UPDATE != true ]; then
-	echo >&2 'info: Running maintenance/update.php automatically, skip this with --e MEDIAWIKI_NO_UPDATE=true';
+if [ -e "LocalSettings.php" -a $MEDIAWIKI_UPDATE = true ]; then
+	echo >&2 'info: Running maintenance/update.php';
 	php maintenance/update.php
 fi
 
