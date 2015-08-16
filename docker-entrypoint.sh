@@ -13,7 +13,7 @@ sleep 10
 : ${MEDIAWIKI_DB_TYPE:=mysql}
 
 : ${MEDIAWIKI_ENABLE_SSL:=false}
-: ${MEDIAWIKI_NO_UPDATE:=false}
+: ${MEDIAWIKI_UPDATE:=false}
 
 if [ -z "$MEDIAWIKI_DB_HOST" ]; then
 	if [ -n "$MYSQL_PORT_3306_TCP_ADDR" ]; then
@@ -216,8 +216,8 @@ fi
 # script. If already up to date, it won't do anything, otherwise it will
 # migrate the database if necessary on container startup. It also will
 # verify the database connection is working.
-if [ -e "LocalSettings.php" -a $MEDIAWIKI_NO_UPDATE != true ]; then
-	echo >&2 'info: Running maintenance/update.php automatically, skip this with --e MEDIAWIKI_NO_UPDATE=true';
+if [ -e "LocalSettings.php" -a $MEDIAWIKI_UPDATE = true ]; then
+	echo >&2 'info: Running maintenance/update.php';
 	php maintenance/update.php
 fi
 
