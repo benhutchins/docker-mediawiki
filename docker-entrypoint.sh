@@ -151,15 +151,6 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 		ln -s "$MEDIAWIKI_SHARED/vendor" /var/www/html/vendor
 	fi
 
-	# If a composer.lock and composer.json file exist, use them to install
-	# dependencies for MediaWiki and desired extensions, skins, etc.
-	if [ -e "$MEDIAWIKI_SHARED/composer.lock" -a -e "$MEDIAWIKI_SHARED/composer.json" ]; then
-		curl -sS https://getcomposer.org/installer | php
-		cp "$MEDIAWIKI_SHARED/composer.lock" composer.lock
-		cp "$MEDIAWIKI_SHARED/composer.json" composer.json
-		php composer.phar install --no-dev
-	fi
-
 	# Attempt to enable SSL support if explicitly requested
 	if [ $MEDIAWIKI_ENABLE_SSL = true ]; then
 		echo >&2 'info: enabling ssl'
@@ -210,6 +201,15 @@ if [ ! -e "LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
 			mv LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
 			ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
 		fi
+fi
+
+# If a composer.lock and composer.json file exist, use them to install
+# dependencies for MediaWiki and desired extensions, skins, etc.
+if [ -e "$MEDIAWIKI_SHARED/composer.lock" -a -e "$MEDIAWIKI_SHARED/composer.json" ]; then
+	curl -sS https://getcomposer.org/installer | php
+	cp "$MEDIAWIKI_SHARED/composer.lock" composer.lock
+	cp "$MEDIAWIKI_SHARED/composer.json" composer.json
+	php composer.phar install --no-dev
 fi
 
 # If LocalSettings.php exists, then attempt to run the update.php maintenance
