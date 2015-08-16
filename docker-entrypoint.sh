@@ -2,9 +2,11 @@
 
 set -e
 
+: ${MEDIAWIKI_SLEEP:=0}
+
 # Sleep because if --link was used, docker-compose, or similar
 # we need to give the database time to start up before we try to connect
-sleep 10
+sleep $MEDIAWIKI_SLEEP
 
 : ${MEDIAWIKI_SITE_NAME:=MediaWiki}
 : ${MEDIAWIKI_SITE_LANG:=en}
