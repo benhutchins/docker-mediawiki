@@ -22,7 +22,7 @@ RUN set -x; \
         imagemagick \
     && ln -fs /usr/lib/x86_64-linux-gnu/libzip.so /usr/lib/ \
     && docker-php-ext-install intl pgsql zip mbstring opcache \
-    && apt-get purge -y --auto-remove g++ libicu-dev libpq-dev libzip-dev \
+    && apt-get purge -y --auto-remove g++ libicu-dev libzip-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite
