@@ -230,6 +230,10 @@ if [ -e "LocalSettings.php" -a $MEDIAWIKI_UPDATE = true ]; then
 	php maintenance/update.php --quick
 fi
 
+# Ensure images folder exists
+mkdir -p images
+
+# Fix file ownership and permissions
 chown -R www-data: .
 chmod 755 images
 
