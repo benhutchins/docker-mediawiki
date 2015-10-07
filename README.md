@@ -26,14 +26,17 @@ Use the following environmental variables to generate a `LocalSettings.php` and 
  - `-e MEDIAWIKI_SITE_LANG=` (defaults to `en`; configures `$wgLanguageCode`)
  - `-e MEDIAWIKI_ADMIN_USER=` (defaults to `admin`; configures default administrator username)
  - `-e MEDIAWIKI_ADMIN_PASS=` (defaults to `rosebud`; configures default administrator password)
+ - `-e MEDIAWIKI_UPDATE=true` (defaults to `false`; run `php maintenance/update.php`)
+ - `-e MEDIAWIKI_SLEEP=` (defaults to `0`; delays startup of container, useful when using Docker Compose)
 
 As mentioned, this will generate the `LocalSettings.php` file that is required by MediaWiki. If you mounted a shared volume (see `Shared Volume` below), the generated `LocalSettings.php` will be automatically moved to your share volume allowing you to edit it. If a `CustomSettings.php` file exists in your data file, a `require('/data/CustomSettings.php');` will be appended to the generated `LocalSettings.php` file.
 
-## Specify MediaWiki version
+## Choosing MediaWiki version
 
-To specify the version of MediaWiki you'd like to install, use `-e MEDIAWIKI_VERSION=1.25.2`. As of writing this, `1.25.2` was the latest stable release. Or you can use one of the built containers using that version:
+You can use one of the built containers using that version:
 
  - `benhutchins/mediawiki:1.23` (uses `1.23.10`, official Long Term Support by [MediaWiki](https://www.mediawiki.org/wiki/MediaWiki))
+ - `benhutchins/mediawiki:1.23-postgres` (currently uses `1.23.10`, and installs the `postgres` php module)
  - `benhutchins/mediawiki:1.24` (uses `1.24.3`)
  - `benhutchins/mediawiki:1.25` (uses `1.25.2`)
  - `benhutchins/mediawiki:latest` (currently uses `1.25.2`)
@@ -70,7 +73,8 @@ You can use the following environment variables for connecting to another databa
  - `-e MEDIAWIKI_DB_PORT=...` (defaults to the port of the linked database container or to the default for specified db type)
  - `-e MEDIAWIKI_DB_USER=...` (defaults to `root` or `postgres` based on db type being `mysql`, or `postgres` respsectively)
  - `-e MEDIAWIKI_DB_PASSWORD=...` (defaults to the password of the linked database container)
- - `-e MEDIAWIKI_DB_NAME=...` (defaults to "mediawiki")
+ - `-e MEDIAWIKI_DB_NAME=...` (defaults to `mediawiki`)
+ - `-e MEDIAWIKI_DB_SCHEMA`... (defaults to `mediawiki`, applies only to when using postgres)
 
 If the `MEDIAWIKI_DB_NAME` specified does not already exist on the provided MySQL
 server, it will be created automatically upon container startup, provided
