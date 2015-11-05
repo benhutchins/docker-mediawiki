@@ -97,8 +97,6 @@ If provided mount a shared volume using the `-v` argument when running `docker r
 
 It is highly recommend you mount a shared volume so uploaded files and images will be outside of the docker container.
 
-By default the shared volume must be mounted to `/data` on the container, you can change this using by using `-e MEDIAWIKI_SHARED=/new/data/path`.
-
 Additionally if a `composer.lock` **and** a `composer.json` are detected, the container will automatically download [composer](https://getcomposer.org) and run `composer install`. Composer can be used to install additional extensions, skins and dependencies.
 
 ## Accessing MediaWiki
@@ -139,6 +137,6 @@ And access your instance of MediaWiki at:
 
 ## Enabling SSL/TLS/HTTPS
 
-To enable SSL on your server, place your certificate files inside your mounted share volume as `ssl.key`, `ssl.crt` and `ssl.bundle.crt`.  Then add `-e MEDIAWIKI_ENABLE_SSL=true` to your `docker run` command. This will enable the ssl module for Apache and force your instance of mediawik to SSL-only, redirecting all requests from port 80 (http) to 443 (https). Also be sure to include [`-P` or `-p 443:443`](https://docs.docker.com/reference/run/#expose-incoming-ports) in your `docker run` command.
+To enable SSL on your server, simply place your `ssl.key`, `ssl.crt` and `ssl.bundle.crt` files in your volume mounted to `/data`. This will enable the ssl module for Apache and make the wiki HTTPS-only. Be sure to include [`-P` or `-p 443:443`](https://docs.docker.com/reference/run/#expose-incoming-ports) in your `docker run` command.
 
 **Note** When enabling SSL, you must update the `$wgServer` in your `LocalSettings.php` to include `https://` as the prefix. If using automatic install, update the `MEDIAWIKI_SITE_SERVER` environmental variable.

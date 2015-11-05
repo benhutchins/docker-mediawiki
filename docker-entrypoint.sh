@@ -14,7 +14,6 @@ sleep $MEDIAWIKI_SLEEP
 : ${MEDIAWIKI_ADMIN_PASS:=rosebud}
 : ${MEDIAWIKI_DB_TYPE:=mysql}
 : ${MEDIAWIKI_DB_SCHEMA:=mediawiki}
-: ${MEDIAWIKI_ENABLE_SSL:=false}
 : ${MEDIAWIKI_UPDATE:=false}
 
 if [ -z "$MEDIAWIKI_DB_HOST" ]; then
@@ -120,62 +119,53 @@ if ! [ -e index.php -a -e includes/DefaultSettings.php ]; then
 	echo >&2 "Complete! MediaWiki has been successfully copied to $(pwd)"
 fi
 
-: ${MEDIAWIKI_SHARED:=/data}
-if [ -d "$MEDIAWIKI_SHARED" ]; then
+if [ -d "/data" ]; then
 	# If there is no LocalSettings.php but we have one under the shared
 	# directory, symlink it
-	if [ -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -e LocalSettings.php ]; then
-		ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
+	if [ -e "/data/LocalSettings.php" -a ! -e LocalSettings.php ]; then
+		ln -s "/data/LocalSettings.php" LocalSettings.php
 	fi
 
 	# If the images directory only contains a README, then link it to
-	# $MEDIAWIKI_SHARED/images, creating the shared directory if necessary
+	# /data/images, creating the shared directory if necessary
 	if [ "$(ls images)" = "README" -a ! -L images ]; then
 		rm -fr images
-		mkdir -p "$MEDIAWIKI_SHARED/images"
-		ln -s "$MEDIAWIKI_SHARED/images" images
+		mkdir -p "/data/images"
+		ln -s "/data/images" images
 	fi
 
 	# If an extensions folder exists inside the shared directory, as long as
 	# /var/www/html/extensions is not already a symbolic link, then replace it
-	if [ -d "$MEDIAWIKI_SHARED/extensions" -a ! -h /var/www/html/extensions ]; then
+	if [ -d "/data/extensions" -a ! -h /var/www/html/extensions ]; then
 		echo >&2 "Found 'extensions' folder in data volume, creating symbolic link."
 		rm -rf /var/www/html/extensions
-		ln -s "$MEDIAWIKI_SHARED/extensions" /var/www/html/extensions
+		ln -s "/data/extensions" /var/www/html/extensions
 	fi
 
 	# If a skins folder exists inside the shared directory, as long as
 	# /var/www/html/skins is not already a symbolic link, then replace it
-	if [ -d "$MEDIAWIKI_SHARED/skins" -a ! -h /var/www/html/skins ]; then
+	if [ -d "/data/skins" -a ! -h /var/www/html/skins ]; then
 		echo >&2 "Found 'skins' folder in data volume, creating symbolic link."
 		rm -rf /var/www/html/skins
-		ln -s "$MEDIAWIKI_SHARED/skins" /var/www/html/skins
+		ln -s "/data/skins" /var/www/html/skins
 	fi
 
 	# If a vendor folder exists inside the shared directory, as long as
 	# /var/www/html/vendor is not already a symbolic link, then replace it
-	if [ -d "$MEDIAWIKI_SHARED/vendor" -a ! -h /var/www/html/vendor ]; then
+	if [ -d "/data/vendor" -a ! -h /var/www/html/vendor ]; then
 		echo >&2 "Found 'vendor' folder in data volume, creating symbolic link."
 		rm -rf /var/www/html/vendor
-		ln -s "$MEDIAWIKI_SHARED/vendor" /var/www/html/vendor
+		ln -s "/data/vendor" /var/www/html/vendor
 	fi
 
 	# Attempt to enable SSL support if explicitly requested
-	if [ $MEDIAWIKI_ENABLE_SSL = true ]; then
+	if [ -e "/data/ssl.key" -a -e "/data/ssl.crt" ]; then
 		echo >&2 'info: enabling ssl'
 		a2enmod ssl
-
-		cp "$MEDIAWIKI_SHARED/ssl.key" /etc/apache2/ssl.key
-		cp "$MEDIAWIKI_SHARED/ssl.crt" /etc/apache2/ssl.crt
-		cp "$MEDIAWIKI_SHARED/ssl.bundle.crt" /etc/apache2/ssl.bundle.crt
 	elif [ -e "/etc/apache2/mods-enabled/ssl.load" ]; then
 		echo >&2 'warning: disabling ssl'
 		a2dismod ssl
 	fi
-elif [ $MEDIAWIKI_ENABLE_SSL = true ]; then
-	echo >&2 'error: Detected MEDIAWIKI_ENABLE_SSL flag but found no data volume';
-	echo >&2 '	Did you forget to mount the volume with -v?'
-	exit 1
 fi
 
 # If there is no LocalSettings.php, create one using maintenance/install.php
@@ -200,25 +190,25 @@ if [ ! -e "LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
 
 		# If we have a mounted share volume, move the LocalSettings.php to it
 		# so it can be restored if this container needs to be reinitiated
-		if [ -d "$MEDIAWIKI_SHARED" ]; then
+		if [ -d "/data" ]; then
 			# Append inclusion of /data/CustomSettings.php
-			if [ -e "$MEDIAWIKI_SHARED/CustomSettings.php" ]; then
-				chown www-data: "$MEDIAWIKI_SHARED/CustomSettings.php"
-				echo "include('$MEDIAWIKI_SHARED/CustomSettings.php');" >> LocalSettings.php
+			if [ -e "/data/CustomSettings.php" ]; then
+				chown www-data: "/data/CustomSettings.php"
+				echo "include('/data/CustomSettings.php');" >> LocalSettings.php
 			fi
 
 			# Move generated LocalSettings.php to share volume
-			mv LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
-			ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
+			mv LocalSettings.php "/data/LocalSettings.php"
+			ln -s "/data/LocalSettings.php" LocalSettings.php
 		fi
 fi
 
 # If a composer.lock and composer.json file exist, use them to install
 # dependencies for MediaWiki and desired extensions, skins, etc.
-if [ -e "$MEDIAWIKI_SHARED/composer.lock" -a -e "$MEDIAWIKI_SHARED/composer.json" ]; then
+if [ -e "/data/composer.lock" -a -e "/data/composer.json" ]; then
 	curl -sS https://getcomposer.org/installer | php
-	cp "$MEDIAWIKI_SHARED/composer.lock" composer.lock
-	cp "$MEDIAWIKI_SHARED/composer.json" composer.json
+	cp "/data/composer.lock" composer.lock
+	cp "/data/composer.json" composer.json
 	php composer.phar install --no-dev
 fi
 
