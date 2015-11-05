@@ -8,7 +8,7 @@ others.
 
 # How to use this image
 
-    docker run --name some-mediawiki --link some-mysql:mysql -v /local/data/path:/data:rw -d benhutchins/mediawiki
+    docker run --name some-mediawiki --link some-mysql:db -v /local/data/path:/data:rw -d benhutchins/mediawiki
 
 Partial explanation of arguments:
 
@@ -44,7 +44,7 @@ You can use one of the built containers using that version:
 
 To use one of these pre-built containers, simply specify the tag as part of the `docker run` command:
 
-    docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
+    docker run --name some-mediawiki --link some-postgres:db -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
 
 ## Docker Compose
 
@@ -62,7 +62,7 @@ The example above uses `--link` to connect the MediaWiki container with a runnin
 
 You can use Postgres instead of MySQL as your database server using the `:postgres` tag:
 
-    docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
+    docker run --name some-mediawiki --link some-postgres:db -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
 
 ### Using Database Server
 
@@ -97,15 +97,13 @@ If provided mount a shared volume using the `-v` argument when running `docker r
 
 It is highly recommend you mount a shared volume so uploaded files and images will be outside of the docker container.
 
-By default the shared volume must be mounted to `/data` on the container, you can change this using by using `-e MEDIAWIKI_SHARED=/new/data/path`.
-
 Additionally if a `composer.lock` **and** a `composer.json` are detected, the container will automatically download [composer](https://getcomposer.org) and run `composer install`. Composer can be used to install additional extensions, skins and dependencies.
 
 ## Accessing MediaWiki
 
 If you'd like to be able to access the instance from the host without the container's IP, standard port mappings can be used using the `-p` or `-P` argument when running `docker run`. See [docs.docker.com](https://docs.docker.com/reference/run/#expose-incoming-ports) for more help.
 
-    docker run --name some-mediawiki --link some-mysql:mysql -p 8080:80 -v /local/data/dir:data:rw -d benhutchins/mediawiki
+    docker run --name some-mediawiki --link some-mysql:db -p 8080:80 -v /local/data/dir:data:rw -d benhutchins/mediawiki
 
 Then, access it via `http://localhost:8080` or `http://host-ip:8080` in a browser.
 
@@ -139,6 +137,6 @@ And access your instance of MediaWiki at:
 
 ## Enabling SSL/TLS/HTTPS
 
-To enable SSL on your server, place your certificate files inside your mounted share volume as `ssl.key`, `ssl.crt` and `ssl.bundle.crt`.  Then add `-e MEDIAWIKI_ENABLE_SSL=true` to your `docker run` command. This will enable the ssl module for Apache and force your instance of mediawik to SSL-only, redirecting all requests from port 80 (http) to 443 (https). Also be sure to include [`-P` or `-p 443:443`](https://docs.docker.com/reference/run/#expose-incoming-ports) in your `docker run` command.
+To enable SSL on your server, simply place your `ssl.key`, `ssl.crt` and `ssl.bundle.crt` files in your volume mounted to `/data`. This will enable the ssl module for Apache and make the wiki HTTPS-only. Be sure to include [`-P` or `-p 443:443`](https://docs.docker.com/reference/run/#expose-incoming-ports) in your `docker run` command.
 
 **Note** When enabling SSL, you must update the `$wgServer` in your `LocalSettings.php` to include `https://` as the prefix. If using automatic install, update the `MEDIAWIKI_SITE_SERVER` environmental variable.

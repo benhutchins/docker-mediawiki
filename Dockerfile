@@ -1,9 +1,8 @@
 FROM php:5.6-apache
 MAINTAINER Benjamin Hutchins <ben@hutchins.co>
 
-# Waiting in antiticipation for built-time arguments
-# https://github.com/docker/docker/issues/14634
-ENV MEDIAWIKI_VERSION 1.25.2
+# Define MEDIAWIKI_VERSION with --build-arg MEDIAWIKI_VERSION=1.25.3
+ARG --description="Specify mediawiki version you wish to install" MEDIAWIKI_VERSION=1.25.3
 
 # Add EXPOSE 443 because the php:apache only has EXPOSE 80
 EXPOSE 80 443
