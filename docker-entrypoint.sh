@@ -84,6 +84,12 @@ if [ -z "$MEDIAWIKI_DB_PORT" ]; then
 	fi
 fi
 
+# Wait for the DB to come up
+while [ `/bin/nc $MEDIAWIKI_DB_HOST $MEDIAWIKI_DB_PORT < /dev/null; echo $?` != 0 ]; do
+    echo "Waiting for database to come up at $MEDIAWIKI_DB_HOST:$MEDIAWIKI_DB_PORT..."
+    sleep 1
+done
+
 export MEDIAWIKI_DB_TYPE MEDIAWIKI_DB_HOST MEDIAWIKI_DB_USER MEDIAWIKI_DB_PASSWORD MEDIAWIKI_DB_NAME
 
 TERM=dumb php -- <<'EOPHP'
