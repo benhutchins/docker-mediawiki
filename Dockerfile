@@ -3,7 +3,7 @@ MAINTAINER Benjamin Hutchins <ben@hutchins.co>
 
 # Waiting in antiticipation for built-time arguments
 # https://github.com/docker/docker/issues/14634
-ENV MEDIAWIKI_VERSION 1.25.3
+ENV MEDIAWIKI_VERSION 1.26.0
 
 # Add EXPOSE 443 because the php:apache only has EXPOSE 80
 EXPOSE 80 443
@@ -20,6 +20,7 @@ RUN set -x; \
         libzip-dev \
         imagemagick \
         netcat \
+        git \
     && ln -fs /usr/lib/x86_64-linux-gnu/libzip.so /usr/lib/ \
     && docker-php-ext-install intl mysqli zip mbstring opcache fileinfo \
     && apt-get purge -y --auto-remove g++ libicu-dev libzip-dev \
@@ -44,7 +45,13 @@ RUN MW_VER_MAJOR_PLUS_MINOR=$(php -r '$parts=explode(".", $_ENV["MEDIAWIKI_VERSI
     && curl -fSL "${MEDIAWIKI_DOWNLOAD_URL}.sig" -o mediawiki.tar.gz.sig \
     && gpg --verify mediawiki.tar.gz.sig \
     && tar -xf mediawiki.tar.gz -C /usr/src/mediawiki --strip-components=1 \
-    && rm -f mediawiki.tar.gz mediawiki.tar.gz.sig
+    && rm -f mediawiki.tar.gz mediawiki.tar.gz.sig \
+    && cd /usr/src/mediawiki \
+    && rm -r extensions \
+    # All extensions
+    && git clone https://gerrit.wikimedia.org/r/p/mediawiki/extensions extensions \
+    && cd extensions \
+    && git submodule update --init VisualEditor
 
 COPY php.ini /usr/local/etc/php/conf.d/mediawiki.ini
 

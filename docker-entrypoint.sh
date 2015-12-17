@@ -204,14 +204,16 @@ if [ ! -e "LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
 		"$MEDIAWIKI_SITE_NAME" \
 		"$MEDIAWIKI_ADMIN_USER"
 
+
 		# If we have a mounted share volume, move the LocalSettings.php to it
 		# so it can be restored if this container needs to be reinitiated
 		if [ -d "$MEDIAWIKI_SHARED" ]; then
-			# Append inclusion of /data/CustomSettings.php
-			if [ -e "$MEDIAWIKI_SHARED/CustomSettings.php" ]; then
-				chown www-data: "$MEDIAWIKI_SHARED/CustomSettings.php"
-				echo "include('$MEDIAWIKI_SHARED/CustomSettings.php');" >> LocalSettings.php
-			fi
+            # Append inclusion of /data/CustomSettings.php
+            echo "@include('$MEDIAWIKI_SHARED/CustomSettings.php');" >> LocalSettings.php
+
+            if [ -e "$MEDIAWIKI_SHARED/CustomSettings.php" ]; then
+                chown www-data: "$MEDIAWIKI_SHARED/CustomSettings.php"
+            fi
 
 			# Move generated LocalSettings.php to share volume
 			mv LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
