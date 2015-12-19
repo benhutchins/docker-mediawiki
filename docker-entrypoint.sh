@@ -2,12 +2,6 @@
 
 set -e
 
-: ${MEDIAWIKI_SLEEP:=0}
-
-# Sleep because if --link was used, docker-compose, or similar
-# we need to give the database time to start up before we try to connect
-sleep $MEDIAWIKI_SLEEP
-
 : ${MEDIAWIKI_SITE_NAME:=MediaWiki}
 : ${MEDIAWIKI_SITE_LANG:=en}
 : ${MEDIAWIKI_ADMIN_USER:=admin}
@@ -85,7 +79,7 @@ if [ -z "$MEDIAWIKI_DB_PORT" ]; then
 fi
 
 # Wait for the DB to come up
-while [ `/bin/nc $MEDIAWIKI_DB_HOST $MEDIAWIKI_DB_PORT < /dev/null; echo $?` != 0 ]; do
+while [ `/bin/nc $MEDIAWIKI_DB_HOST $MEDIAWIKI_DB_PORT < /dev/null > /dev/null; echo $?` != 0 ]; do
     echo "Waiting for database to come up at $MEDIAWIKI_DB_HOST:$MEDIAWIKI_DB_PORT..."
     sleep 1
 done
@@ -115,16 +109,9 @@ if ($_ENV['MEDIAWIKI_DB_TYPE'] == 'mysql') {
 }
 EOPHP
 
-if ! [ -e index.php -a -e includes/DefaultSettings.php ]; then
-	echo >&2 "MediaWiki not found in $(pwd) - copying now..."
-
-	if [ "$(ls -A)" ]; then
-		echo >&2 "WARNING: $(pwd) is not empty - press Ctrl+C now if this is an error!"
-		( set -x; ls -A; sleep 10 )
-	fi
-	tar cf - --one-file-system -C /usr/src/mediawiki . | tar xf -
-	echo >&2 "Complete! MediaWiki has been successfully copied to $(pwd)"
-fi
+cd /var/www/html
+# FIXME: Keep php files out of the doc root.
+ln -s /usr/src/mediawiki/* .
 
 : ${MEDIAWIKI_SHARED:=/data}
 if [ -d "$MEDIAWIKI_SHARED" ]; then
@@ -204,17 +191,12 @@ if [ ! -e "LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
 		"$MEDIAWIKI_SITE_NAME" \
 		"$MEDIAWIKI_ADMIN_USER"
 
+        # Append inclusion of /compose_conf/CustomSettings.php
+        echo "@include('/conf/CustomSettings.php');" >> LocalSettings.php
 
 		# If we have a mounted share volume, move the LocalSettings.php to it
 		# so it can be restored if this container needs to be reinitiated
 		if [ -d "$MEDIAWIKI_SHARED" ]; then
-            # Append inclusion of /data/CustomSettings.php
-            echo "@include('$MEDIAWIKI_SHARED/CustomSettings.php');" >> LocalSettings.php
-
-            if [ -e "$MEDIAWIKI_SHARED/CustomSettings.php" ]; then
-                chown www-data: "$MEDIAWIKI_SHARED/CustomSettings.php"
-            fi
-
 			# Move generated LocalSettings.php to share volume
 			mv LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
 			ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
@@ -236,7 +218,7 @@ fi
 # verify the database connection is working.
 if [ -e "LocalSettings.php" -a $MEDIAWIKI_UPDATE = true ]; then
 	echo >&2 'info: Running maintenance/update.php';
-	php maintenance/update.php --quick
+	php maintenance/update.php --quick --conf ./LocalSettings.php
 fi
 
 # Ensure images folder exists
