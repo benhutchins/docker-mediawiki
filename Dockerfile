@@ -1,34 +1,29 @@
-# TODO: Switch to debian sid
-
-FROM php:5.6-apache
+FROM debian:sid
 MAINTAINER Gabriel Wicke <gwicke@wikimedia.org>
 
 # Waiting in antiticipation for built-time arguments
 # https://github.com/docker/docker/issues/14634
 ENV MEDIAWIKI_VERSION wmf/1.27.0-wmf.9
 
-# Add EXPOSE 443 because the php:apache only has EXPOSE 80
-EXPOSE 80 443
-
-# We use docker-php-ext-install to enable PHP modules,
-# @see https://github.com/docker-library/php/blob/master/docker-php-ext-install
-# Uses phpize underneath instead of perl.
+# XXX: Consider switching to nginx.
 RUN set -x; \
     apt-get update \
     && apt-get install -y --no-install-recommends \
-        g++ \
-        libicu52 \
-        libicu-dev \
-        libzip-dev \
+        ca-certificates \
+        apache2 \
+        libapache2-mod-php5 \
+        php5-mysql \
+        php5-cli \
+        php5-gd \
+        php5-curl \
         imagemagick \
         netcat \
         git \
-    && ln -fs /usr/lib/x86_64-linux-gnu/libzip.so /usr/lib/ \
-    && docker-php-ext-install intl mysqli zip mbstring opcache fileinfo \
-    && apt-get purge -y --auto-remove g++ libicu-dev libzip-dev \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt/archives/* \
-    && a2enmod rewrite
+    && a2enmod rewrite \
+    # Remove the default Debian index page.
+    && rm /var/www/html/index.html
 
 
 # MediaWiki setup
@@ -56,5 +51,7 @@ COPY apache/mediawiki.conf /etc/apache2/
 RUN echo "Include /etc/apache2/mediawiki.conf" >> /etc/apache2/apache2.conf
 
 COPY docker-entrypoint.sh /entrypoint.sh
+
+EXPOSE 80 443
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD ["apachectl", "-e", "info", "-D", "FOREGROUND"]
