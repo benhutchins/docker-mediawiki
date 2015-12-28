@@ -22,6 +22,8 @@ RUN set -x; \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt/archives/* \
     && a2enmod rewrite \
+    && a2enmod proxy \
+    && a2enmod proxy_http \
     # Remove the default Debian index page.
     && rm /var/www/html/index.html
 
