@@ -3,7 +3,7 @@ MAINTAINER Benjamin Hutchins <ben@hutchins.co>
 
 # Waiting in antiticipation for built-time arguments
 # https://github.com/docker/docker/issues/14634
-ENV MEDIAWIKI_VERSION 1.25.2
+ENV MEDIAWIKI_VERSION 1.26.2
 
 # Add EXPOSE 443 because the php:apache only has EXPOSE 80
 EXPOSE 80 443
