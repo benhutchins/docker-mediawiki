@@ -29,6 +29,10 @@ if [ -z "$MEDIAWIKI_DB_HOST" ]; then
 	fi
 fi
 
+if [ -z "$MEDIAWIKI_RESTBASE_URL" ]; then
+	export MEDIAWIKI_RESTBASE_URL=restbase-is-not-specified
+fi
+
 if [ -z "$MEDIAWIKI_DB_USER" ]; then
 	if [ "$MEDIAWIKI_DB_TYPE" = "mysql" ]; then
 		echo >&2 'info: missing MEDIAWIKI_DB_USER environment variable, defaulting to "root"'
