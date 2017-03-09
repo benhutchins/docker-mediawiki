@@ -2,12 +2,6 @@
 
 set -e
 
-: ${MEDIAWIKI_SLEEP:=0}
-
-# Sleep because if --link was used, docker-compose, or similar
-# we need to give the database time to start up before we try to connect
-sleep $MEDIAWIKI_SLEEP
-
 : ${MEDIAWIKI_SITE_NAME:=MediaWiki}
 : ${MEDIAWIKI_SITE_LANG:=en}
 : ${MEDIAWIKI_ADMIN_USER:=admin}
@@ -56,7 +50,7 @@ if [ -z "$MEDIAWIKI_DB_PORT" ]; then
 fi
 
 # Wait for the DB to come up
-while [ `/bin/nc $MEDIAWIKI_DB_HOST $MEDIAWIKI_DB_PORT < /dev/null; echo $?` != 0 ]; do
+while [ `/bin/nc $MEDIAWIKI_DB_HOST $MEDIAWIKI_DB_PORT < /dev/null > /dev/null; echo $?` != 0 ]; do
     echo "Waiting for database to come up at $MEDIAWIKI_DB_HOST:$MEDIAWIKI_DB_PORT..."
     sleep 1
 done
