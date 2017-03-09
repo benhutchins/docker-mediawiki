@@ -19,6 +19,7 @@ RUN set -x; \
         libicu-dev \
         libzip-dev \
         imagemagick \
+        netcat \
     && ln -fs /usr/lib/x86_64-linux-gnu/libzip.so /usr/lib/ \
     && docker-php-ext-install intl mysqli zip mbstring opcache fileinfo \
     && apt-get purge -y --auto-remove g++ libicu-dev libzip-dev \
