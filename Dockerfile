@@ -25,6 +25,9 @@ RUN set -x; \
     && apt-get purge -y --auto-remove g++ libicu-dev libzip-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Installing PEAR modules for Mail to allow MediaWiki to use SMTP for emails
+RUN pear install mail net_smtp
+
 # Enable the Apache rewrite module, which is commonly used so you can have
 # nicer formatted URLs than /index.php?page=....
 RUN a2enmod rewrite
