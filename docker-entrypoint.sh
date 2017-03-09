@@ -2,37 +2,22 @@
 
 set -e
 
-: ${MEDIAWIKI_SLEEP:=0}
-
-# Sleep because if --link was used, docker-compose, or similar
-# we need to give the database time to start up before we try to connect
-sleep $MEDIAWIKI_SLEEP
-
 : ${MEDIAWIKI_SITE_NAME:=MediaWiki}
 : ${MEDIAWIKI_SITE_LANG:=en}
 : ${MEDIAWIKI_ADMIN_USER:=admin}
 : ${MEDIAWIKI_ADMIN_PASS:=rosebud}
 : ${MEDIAWIKI_DB_TYPE:=mysql}
 : ${MEDIAWIKI_DB_SCHEMA:=mediawiki}
+: ${MEDIAWIKI_DB_NAME:=mediawiki}
 : ${MEDIAWIKI_ENABLE_SSL:=false}
 : ${MEDIAWIKI_UPDATE:=false}
 
 if [ -z "$MEDIAWIKI_DB_HOST" ]; then
-	if [ -n "$MYSQL_PORT_3306_TCP_ADDR" ]; then
-		MEDIAWIKI_DB_HOST=$MYSQL_PORT_3306_TCP_ADDR
-	elif [ -n "$POSTGRES_PORT_5432_TCP_ADDR" ]; then
-		MEDIAWIKI_DB_TYPE=postgres
-		MEDIAWIKI_DB_HOST=$POSTGRES_PORT_5432_TCP_ADDR
-	elif [ -n "$DB_PORT_3306_TCP_ADDR" ]; then
-		MEDIAWIKI_DB_HOST=$DB_PORT_3306_TCP_ADDR
-	elif [ -n "$DB_PORT_5432_TCP_ADDR" ]; then
-		MEDIAWIKI_DB_TYPE=postgres
-		MEDIAWIKI_DB_HOST=$DB_PORT_5432_TCP_ADDR
-	else
-		echo >&2 'error: missing MEDIAWIKI_DB_HOST environment variable'
-		echo >&2 '	Did you forget to --link your database?'
-		exit 1
-	fi
+	echo >&2 'error: missing MEDIAWIKI_DB_HOST environment variable'
+	echo >&2 '	Did you forget to provide -e MEDIAWIKI_DB_HOST=db…?'
+	echo >&2
+	echo >&2 '	(Also do not forget MEDIAWIKI_DB_USER, MEDIAWIKI_DB_PASSWORD, MEDIAWIKI_DB_NAME)'
+	exit 1
 fi
 
 if [ -z "$MEDIAWIKI_DB_USER" ]; then
@@ -49,40 +34,26 @@ if [ -z "$MEDIAWIKI_DB_USER" ]; then
 fi
 
 if [ -z "$MEDIAWIKI_DB_PASSWORD" ]; then
-	if [ -n "$MYSQL_ENV_MYSQL_ROOT_PASSWORD" ]; then
-		MEDIAWIKI_DB_PASSWORD=$MYSQL_ENV_MYSQL_ROOT_PASSWORD
-	elif [ -n "$POSTGRES_ENV_POSTGRES_PASSWORD" ]; then
-		MEDIAWIKI_DB_PASSWORD=$POSTGRES_ENV_POSTGRES_PASSWORD
-	elif [ -n "$DB_ENV_MYSQL_ROOT_PASSWORD" ]; then
-		MEDIAWIKI_DB_PASSWORD=$DB_ENV_MYSQL_ROOT_PASSWORD
-	elif [ -n "$DB_ENV_POSTGRES_PASSWORD" ]; then
-		MEDIAWIKI_DB_PASSWORD=$DB_ENV_POSTGRES_PASSWORD
-	else
-		echo >&2 'error: missing required MEDIAWIKI_DB_PASSWORD environment variable'
-		echo >&2 '	Did you forget to -e MEDIAWIKI_DB_PASSWORD=... ?'
-		echo >&2
-		echo >&2 '	(Also of interest might be MEDIAWIKI_DB_USER and MEDIAWIKI_DB_NAME)'
-		exit 1
-	fi
+	echo >&2 'error: missing required MEDIAWIKI_DB_PASSWORD environment variable'
+	echo >&2 '	Did you forget to provide -e MEDIAWIKI_DB_PASSWORD=…?'
+	echo >&2
+	echo >&2 '	(Also of interest might be MEDIAWIKI_DB_USER and MEDIAWIKI_DB_NAME)'
+	exit 1
 fi
 
-: ${MEDIAWIKI_DB_NAME:=mediawiki}
-
 if [ -z "$MEDIAWIKI_DB_PORT" ]; then
-	if [ -n "$MYSQL_PORT_3306_TCP_PORT" ]; then
-		MEDIAWIKI_DB_PORT=$MYSQL_PORT_3306_TCP_PORT
-	elif [ -n "$POSTGRES_PORT_5432_TCP_PORT" ]; then
-		MEDIAWIKI_DB_PORT=$POSTGRES_PORT_5432_TCP_PORT
-	elif [ -n "$DB_PORT_3306_TCP_PORT" ]; then
-		MEDIAWIKI_DB_PORT=$DB_PORT_3306_TCP_PORT
-	elif [ -n "$DB_PORT_5432_TCP_PORT" ]; then
-		MEDIAWIKI_DB_PORT=$DB_PORT_5432_TCP_PORT
-	elif [ "$MEDIAWIKI_DB_TYPE" = "mysql" ]; then
+	if [ "$MEDIAWIKI_DB_TYPE" = "mysql" ]; then
 		MEDIAWIKI_DB_PORT="3306"
 	elif [ "$MEDIAWIKI_DB_TYPE" = "postgres" ]; then
 		MEDIAWIKI_DB_PORT="5432"
 	fi
 fi
+
+# Wait for the DB to come up
+while [ `/bin/nc $MEDIAWIKI_DB_HOST $MEDIAWIKI_DB_PORT < /dev/null > /dev/null; echo $?` != 0 ]; do
+    echo "Waiting for database to come up at $MEDIAWIKI_DB_HOST:$MEDIAWIKI_DB_PORT..."
+    sleep 1
+done
 
 export MEDIAWIKI_DB_TYPE MEDIAWIKI_DB_HOST MEDIAWIKI_DB_USER MEDIAWIKI_DB_PASSWORD MEDIAWIKI_DB_NAME
 

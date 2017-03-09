@@ -35,16 +35,21 @@ As mentioned, this will generate the `LocalSettings.php` file that is required b
 
 You can use one of the built containers using that version:
 
- - `benhutchins/mediawiki:1.23` (uses `1.23.10`, official Long Term Support by [MediaWiki](https://www.mediawiki.org/wiki/MediaWiki))
- - `benhutchins/mediawiki:1.23-postgres` (currently uses `1.23.10`, and installs the `postgres` php module)
- - `benhutchins/mediawiki:1.24` (uses `1.24.3`)
- - `benhutchins/mediawiki:1.25` (uses `1.25.2`)
- - `benhutchins/mediawiki:latest` (currently uses `1.25.2`)
- - `benhutchins/mediawiki:postgres` (currently uses `1.25.2`, and installs the `postgres` php module)
+ - `benhutchins/mediawiki:lte` (uses `1.23.15`, official Long Term Support by [MediaWiki](https://www.mediawiki.org/wiki/MediaWiki))
+ - `benhutchins/mediawiki:lte-postgres` (currently uses `1.23.15`, and installs the `postgres` php module)
+ - `benhutchins/mediawiki:1.28` (uses `1.28.0`)
+ - `benhutchins/mediawiki:latest` (currently uses `1.28.0`)
+ - `benhutchins/mediawiki:postgres` (alias for `latest-postgres`)
+
+For the full list of options, check [Docker Hub](https://hub.docker.com/r/benhutchins/mediawiki/tags/).
 
 To use one of these pre-built containers, simply specify the tag as part of the `docker run` command:
 
-    docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
+    docker run
+      --name some-mediawiki
+      --link some-postgres:postgres
+      -v /local/data/path:/data:rw
+      benhutchins/mediawiki:postgres
 
 ## Docker Compose
 
@@ -56,13 +61,27 @@ To run with [Docker Compose](https://docs.docker.com/compose/install/), you'll n
 
 ## Configure Database
 
-The example above uses `--link` to connect the MediaWiki container with a running [mysql](https://hub.docker.com/_/mysql/) container. This is probably not the best idea for use in production, keeping data in docker containers can be dangerous.
+### Using MySQL
+
+You can use MYSQL, the default database:
+
+    docker run
+      -e MEDIAWIKI_DB_HOST=my.mysql.server
+      -e MEDIAWIKI_DB_USER=mediawiki
+      -e MEDIAWIKI_DB_PASSWORD=password
 
 ### Using Postgres
 
 You can use Postgres instead of MySQL as your database server using the `:postgres` tag:
 
-    docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
+    docker run --name some-mediawiki
+      -e MEDIAWIKI_DB_TYPE=postgres
+      -e MEDIAWIKI_DB_HOST=some-postgres:postgres
+      -e MEDIAWIKI_DB_USER=mediawiki
+      -e MEDIAWIKI_DB_PASSWORD=password
+      -v /local/data/path:/data:rw
+      -d
+      benhutchins/mediawiki:lte-postgres
 
 ### Using Database Server
 
