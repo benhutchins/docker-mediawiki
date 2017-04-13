@@ -74,7 +74,6 @@ You can use the following environment variables for connecting to another databa
  - `-e MEDIAWIKI_DB_USER=...` (defaults to `root` or `postgres` based on db type being `mysql`, or `postgres` respsectively)
  - `-e MEDIAWIKI_DB_PASSWORD=...` (defaults to the password of the linked database container)
  - `-e MEDIAWIKI_DB_NAME=...` (defaults to `mediawiki`)
- - `-e MEDIAWIKI_DB_SCHEMA`... (defaults to `mediawiki`, applies only to when using postgres)
 
 If the `MEDIAWIKI_DB_NAME` specified does not already exist on the provided MySQL
 server, it will be created automatically upon container startup, provided
