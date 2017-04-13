@@ -183,7 +183,6 @@ if [ ! -e "LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
 	php maintenance/install.php \
 		--confpath /var/www/html \
 		--dbname "$MEDIAWIKI_DB_NAME" \
-		--dbschema "$MEDIAWIKI_DB_SCHEMA" \
 		--dbport "$MEDIAWIKI_DB_PORT" \
 		--dbserver "$MEDIAWIKI_DB_HOST" \
 		--dbtype "$MEDIAWIKI_DB_TYPE" \
