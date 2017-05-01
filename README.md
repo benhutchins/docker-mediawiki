@@ -36,7 +36,7 @@ As mentioned, this will generate the `LocalSettings.php` file that is required b
 We currently track latest MediaWiki production branches, as run on
 wikipedia.org.
 
- - `wikimedia/mediawiki:latest` (currently uses `1.27-wmf9`)
+ - `wikimedia/mediawiki:latest` (currently uses `1.27.3`)
 
 To use one of these pre-built containers, simply specify the tag as part of the `docker run` command:
 
