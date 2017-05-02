@@ -2,12 +2,6 @@
 
 set -e
 
-: ${MEDIAWIKI_SLEEP:=0}
-
-# Sleep because if --link was used, docker-compose, or similar
-# we need to give the database time to start up before we try to connect
-sleep $MEDIAWIKI_SLEEP
-
 : ${MEDIAWIKI_SITE_NAME:=MediaWiki}
 : ${MEDIAWIKI_SITE_LANG:=en}
 : ${MEDIAWIKI_ADMIN_USER:=admin}
@@ -33,6 +27,10 @@ if [ -z "$MEDIAWIKI_DB_HOST" ]; then
 		echo >&2 '	Did you forget to --link your database?'
 		exit 1
 	fi
+fi
+
+if [ -z "$MEDIAWIKI_RESTBASE_URL" ]; then
+	export MEDIAWIKI_RESTBASE_URL=restbase-is-not-specified
 fi
 
 if [ -z "$MEDIAWIKI_DB_USER" ]; then
@@ -84,6 +82,12 @@ if [ -z "$MEDIAWIKI_DB_PORT" ]; then
 	fi
 fi
 
+# Wait for the DB to come up
+while [ `/bin/nc $MEDIAWIKI_DB_HOST $MEDIAWIKI_DB_PORT < /dev/null > /dev/null; echo $?` != 0 ]; do
+    echo "Waiting for database to come up at $MEDIAWIKI_DB_HOST:$MEDIAWIKI_DB_PORT..."
+    sleep 1
+done
+
 export MEDIAWIKI_DB_TYPE MEDIAWIKI_DB_HOST MEDIAWIKI_DB_USER MEDIAWIKI_DB_PASSWORD MEDIAWIKI_DB_NAME
 
 TERM=dumb php -- <<'EOPHP'
@@ -109,28 +113,22 @@ if ($_ENV['MEDIAWIKI_DB_TYPE'] == 'mysql') {
 }
 EOPHP
 
-if ! [ -e index.php -a -e includes/DefaultSettings.php ]; then
-	echo >&2 "MediaWiki not found in $(pwd) - copying now..."
-
-	if [ "$(ls -A)" ]; then
-		echo >&2 "WARNING: $(pwd) is not empty - press Ctrl+C now if this is an error!"
-		( set -x; ls -A; sleep 10 )
-	fi
-	tar cf - --one-file-system -C /usr/src/mediawiki . | tar xf -
-	echo >&2 "Complete! MediaWiki has been successfully copied to $(pwd)"
-fi
+cd /var/www/html
+# FIXME: Keep php files out of the doc root.
+ln -sf /usr/src/mediawiki/* .
 
 : ${MEDIAWIKI_SHARED:=/data}
 if [ -d "$MEDIAWIKI_SHARED" ]; then
 	# If there is no LocalSettings.php but we have one under the shared
 	# directory, symlink it
-	if [ -e "$MEDIAWIKI_SHARED/LocalSettings.php" -a ! -e LocalSettings.php ]; then
+	if [ -e "$MEDIAWIKI_SHARED/LocalSettings.php" ]; then
+    rm -f LocalSettings.php
 		ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
 	fi
 
 	# If the images directory only contains a README, then link it to
 	# $MEDIAWIKI_SHARED/images, creating the shared directory if necessary
-	if [ "$(ls images)" = "README" -a ! -L images ]; then
+	if [ "$(ls images)" = "README" ]; then
 		rm -fr images
 		mkdir -p "$MEDIAWIKI_SHARED/images"
 		ln -s "$MEDIAWIKI_SHARED/images" images
@@ -138,7 +136,7 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 
 	# If an extensions folder exists inside the shared directory, as long as
 	# /var/www/html/extensions is not already a symbolic link, then replace it
-	if [ -d "$MEDIAWIKI_SHARED/extensions" -a ! -h /var/www/html/extensions ]; then
+	if [ -d "$MEDIAWIKI_SHARED/extensions" ]; then
 		echo >&2 "Found 'extensions' folder in data volume, creating symbolic link."
 		rm -rf /var/www/html/extensions
 		ln -s "$MEDIAWIKI_SHARED/extensions" /var/www/html/extensions
@@ -146,7 +144,7 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 
 	# If a skins folder exists inside the shared directory, as long as
 	# /var/www/html/skins is not already a symbolic link, then replace it
-	if [ -d "$MEDIAWIKI_SHARED/skins" -a ! -h /var/www/html/skins ]; then
+	if [ -d "$MEDIAWIKI_SHARED/skins" ]; then
 		echo >&2 "Found 'skins' folder in data volume, creating symbolic link."
 		rm -rf /var/www/html/skins
 		ln -s "$MEDIAWIKI_SHARED/skins" /var/www/html/skins
@@ -154,7 +152,7 @@ if [ -d "$MEDIAWIKI_SHARED" ]; then
 
 	# If a vendor folder exists inside the shared directory, as long as
 	# /var/www/html/vendor is not already a symbolic link, then replace it
-	if [ -d "$MEDIAWIKI_SHARED/vendor" -a ! -h /var/www/html/vendor ]; then
+	if [ -d "$MEDIAWIKI_SHARED/vendor" ]; then
 		echo >&2 "Found 'vendor' folder in data volume, creating symbolic link."
 		rm -rf /var/www/html/vendor
 		ln -s "$MEDIAWIKI_SHARED/vendor" /var/www/html/vendor
@@ -198,15 +196,12 @@ if [ ! -e "LocalSettings.php" -a ! -z "$MEDIAWIKI_SITE_SERVER" ]; then
 		"$MEDIAWIKI_SITE_NAME" \
 		"$MEDIAWIKI_ADMIN_USER"
 
+        # Append inclusion of /compose_conf/CustomSettings.php
+        echo "@include('/conf/CustomSettings.php');" >> LocalSettings.php
+
 		# If we have a mounted share volume, move the LocalSettings.php to it
 		# so it can be restored if this container needs to be reinitiated
 		if [ -d "$MEDIAWIKI_SHARED" ]; then
-			# Append inclusion of /data/CustomSettings.php
-			if [ -e "$MEDIAWIKI_SHARED/CustomSettings.php" ]; then
-				chown www-data: "$MEDIAWIKI_SHARED/CustomSettings.php"
-				echo "include('$MEDIAWIKI_SHARED/CustomSettings.php');" >> LocalSettings.php
-			fi
-
 			# Move generated LocalSettings.php to share volume
 			mv LocalSettings.php "$MEDIAWIKI_SHARED/LocalSettings.php"
 			ln -s "$MEDIAWIKI_SHARED/LocalSettings.php" LocalSettings.php
@@ -228,7 +223,7 @@ fi
 # verify the database connection is working.
 if [ -e "LocalSettings.php" -a $MEDIAWIKI_UPDATE = true ]; then
 	echo >&2 'info: Running maintenance/update.php';
-	php maintenance/update.php --quick
+	php maintenance/update.php --quick --conf ./LocalSettings.php
 fi
 
 # Ensure images folder exists
