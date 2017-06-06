@@ -1,9 +1,7 @@
 FROM debian:sid
 MAINTAINER Gabriel Wicke <gwicke@wikimedia.org>
 
-# Waiting in antiticipation for built-time arguments
-# https://github.com/docker/docker/issues/14634
-ENV MEDIAWIKI_VERSION wmf/1.27.0-wmf.9
+ENV MEDIAWIKI_VERSION wmf/1.30.0-wmf.2
 
 # XXX: Consider switching to nginx.
 RUN set -x; \
@@ -11,11 +9,13 @@ RUN set -x; \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         apache2 \
-        libapache2-mod-php5 \
-        php5-mysql \
-        php5-cli \
-        php5-gd \
-        php5-curl \
+        libapache2-mod-php7.1 \
+        php7.1-mysql \
+        php7.1-cli \
+        php7.1-gd \
+        php7.1-curl \
+        php7.1-mbstring \
+        php7.1-xml \
         imagemagick \
         netcat \
         git \
@@ -45,7 +45,9 @@ RUN set -x; \
     && git submodule update --init VisualEditor \
     && cd VisualEditor \
     && git checkout $MEDIAWIKI_VERSION \
-    && git submodule update --init
+    && git submodule update --init \
+    && cd .. \
+    && git submodule update --init Math
 
 COPY php.ini /usr/local/etc/php/conf.d/mediawiki.ini
 
