@@ -3,7 +3,7 @@ echo "This script builds distribution versions for several mediawiki versions"
 
 REPO="benhutchins/mediawiki"
 VERSIONS=(1.30.0 1.29.2 1.28.3 1.27.4 1.25.6 1.24.4 1.23.17)
-LATEST='1.23'
+LATEST='1.30'
 LTS='1.27'
 
 echo "Building base image"
