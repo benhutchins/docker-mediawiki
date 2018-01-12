@@ -33,18 +33,19 @@ As mentioned, this will generate the `LocalSettings.php` file that is required b
 
 ## Choosing MediaWiki version
 
-You can use one of the built containers using that version:
+You can use one of the built containers, see all options on [Docker Hub](https://hub.docker.com/r/benhutchins/mediawiki/tags/).
 
- - `benhutchins/mediawiki:1.23` (uses `1.23.10`, official Long Term Support by [MediaWiki](https://www.mediawiki.org/wiki/MediaWiki))
- - `benhutchins/mediawiki:1.23-postgres` (currently uses `1.23.10`, and installs the `postgres` php module)
- - `benhutchins/mediawiki:1.24` (uses `1.24.3`)
- - `benhutchins/mediawiki:1.25` (uses `1.25.2`)
- - `benhutchins/mediawiki:latest` (currently uses `1.25.2`)
- - `benhutchins/mediawiki:postgres` (currently uses `1.25.2`, and installs the `postgres` php module)
+- `benhutchins/mediawiki:lts` (uses `1.27`, official Long Term Support by [MediaWiki](https://www.mediawiki.org/wiki/MediaWiki))
+ - `benhutchins/mediawiki:latest` (uses `1.30`)
+ - `benhutchins/mediawiki:1.30`
+ - `benhutchins/mediawiki:1.29`
+ - `benhutchins/mediawiki:1.27`
+ - `benhutchins/mediawiki:1.25`
+ - `benhutchins/mediawiki:1.23`
 
 To use one of these pre-built containers, simply specify the tag as part of the `docker run` command:
 
-    docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
+    docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:lts
 
 ## Docker Compose
 
@@ -117,28 +118,10 @@ After using the installation wizard, save a copy of the generated `LocalSettings
 
 If you're using `--link` to connect with a database, you'll be requested to specify the database host, user, password and name. Run `exec some-mediawiki printenv | grep 'MYSQL\|DB\|POSTGRES'` to view the environmental variables relating to the linked database. The database user will not be included, for that use `root` or `postgres` depending on whether you're using mysql or postgres respsectively.
 
-### Docker Machine
-
-If you're using Docker Machine, using `http://localhost:8080` won't work, instead you'll need to run:
-
-    docker-machine ip default
-
-And access your instance of MediaWiki at:
-
-    http://$(docker-machine ip default):8080/
-
-### boot2docker
-
-If you're using boot2docker, using `http://localhost:8080` won't work, instead you'll need to run:
-
-    boot2docker ip
-
-And access your instance of MediaWiki at:
-
-    http://$(boot2docker ip):8080/
-
 ## Enabling SSL/TLS/HTTPS
 
-To enable SSL on your server, place your certificate files inside your mounted share volume as `ssl.key`, `ssl.crt` and `ssl.bundle.crt`.  Then add `-e MEDIAWIKI_ENABLE_SSL=true` to your `docker run` command. This will enable the ssl module for Apache and force your instance of mediawik to SSL-only, redirecting all requests from port 80 (http) to 443 (https). Also be sure to include [`-P` or `-p 443:443`](https://docs.docker.com/reference/run/#expose-incoming-ports) in your `docker run` command.
+To enable SSL on your server, place your certificate files inside your mounted share volume as `ssl.key`, `ssl.crt` and `ssl.bundle.crt`.  Then add `-e MEDIAWIKI_ENABLE_SSL=true` to your `docker run` command. This will enable the ssl module for Apache and force your instance of mediawiki to SSL-only, redirecting all requests from port 80 (http) to 443 (https). Also be sure to include [`-P` or `-p 443:443`](https://docs.docker.com/reference/run/#expose-incoming-ports) in your `docker run` command.
+
+Consider using an nginx reverse proxy to provide SSL, rather than relying on the container. It will perform better and be easier to manage.
 
 **Note** When enabling SSL, you must update the `$wgServer` in your `LocalSettings.php` to include `https://` as the prefix. If using automatic install, update the `MEDIAWIKI_SITE_SERVER` environmental variable.

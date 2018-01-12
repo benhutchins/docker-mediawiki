@@ -1,25 +1,41 @@
-db:
-  image: mysql
-  environment:
-    - MYSQL_ROOT_PASSWORD=password
-web:
-  build: .
-  ports:
-    - 80:80
-    - 443:443
-  # use the links section if you want to use a container for a database.
-  # if not, and you want to use an external database server, configure
-  # if with the environment variables in the 'environment' section.
-  # see README.md for more details.
-  links:
-    - db
-  # uncomment the 'volumes' section to enable a shared volume with docker-compose
-  # volumes:
-  #   - /local/data/dir:/data:rw
-  environment:
-    - MEDIAWIKI_SITE_SERVER=//my-wiki
-    - MEDIAWIKI_SITE_NAME=My Awesome Wiki
-    - MEDIAWIKI_DB_PASSWORD=password
+version: '3.2'
 
-    # uncomment 'MEDIAWIKI_ENABLE_SSL' to enable SSL support
-    # - MEDIAWIKI_ENABLE_SSL=true
+services:
+  db:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+
+    # If you want to use Postgres, simply swap out to postgres
+    # image: postgres
+    # environment:
+    #   POSTGRES_PASSWORD: password
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # you can specify a mediawiki version using the 'MEDIAWIKI_VERSION' arg
+        MEDIAWIKI_VERSION: 1.27.4
+    ports:
+      - 80:80
+      # - 443:443
+    # use the links section if you want to use a container for a database.
+    # if not, and you want to use an external database server, configure
+    # if with the environment variables in the 'environment' section.
+    # see README.md for more details.
+    links:
+      - db
+    depends_on:
+      - db
+    # uncomment the 'volumes' section to retain uploads
+    # volumes:
+    #   - /local/data/dir:/data:rw
+    environment:
+      MEDIAWIKI_SITE_SERVER: //my-wiki
+      MEDIAWIKI_SITE_NAME: My Awesome Wiki
+      MEDIAWIKI_DB_PASSWORD: password
+
+      # uncomment 'MEDIAWIKI_ENABLE_SSL' to enable SSL support
+      # MEDIAWIKI_ENABLE_SSL: true
