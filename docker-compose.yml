@@ -1,15 +1,22 @@
 version: '3.2'
 
 services:
-  db:
-    image: mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: password
+  # If you want to use a MySQL database, provided by Docker, uncomment below:
+  # db:
+  #   image: mysql
+  #   environment:
+  #     MYSQL_RANDOM_ROOT_PASSWORD: yes
+  #     MYSQL_DATABASE: mediawiki
+  #     MYSQL_USER: mediawiki
+  #     MYSQL_PASSWORD: password
 
-    # If you want to use Postgres, simply swap out to postgres
-    # image: postgres
-    # environment:
-    #   POSTGRES_PASSWORD: password
+  # If you want to use a Postgres database, provided by Docker, uncomment below:
+  # db:
+  #   image: postgres
+  #   environment:
+  #     POSTGRES_DB: mediawiki
+  #     POSTGRES_USER: mediawiki
+  #     POSTGRES_PASSWORD: password
 
   web:
     build:
@@ -35,7 +42,14 @@ services:
     environment:
       MEDIAWIKI_SITE_SERVER: //my-wiki
       MEDIAWIKI_SITE_NAME: My Awesome Wiki
+
+      # you need to specify the reference to the database, Docker no longer
+      # shares environmental variables between linked containers
+      MEDIAWIKI_DB_TYPE: mysql # 'mysql' or 'postgres'
+      MEDIAWIKI_DB_HOST: db
+      MEDIAWIKI_DB_USER: mediawiki
       MEDIAWIKI_DB_PASSWORD: password
+      MEDIAWIKI_DB_NAME: mediawiki
 
       # uncomment 'MEDIAWIKI_ENABLE_SSL' to enable SSL support
       # MEDIAWIKI_ENABLE_SSL: true

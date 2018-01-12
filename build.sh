@@ -2,7 +2,7 @@
 echo "This script builds distribution versions for several mediawiki versions"
 
 REPO="benhutchins/mediawiki"
-VERSIONS=(1.30.0 1.29.2 1.27.4 1.25.2 1.24.3 1.23.10)
+VERSIONS=(1.30.0 1.29.2 1.28.3 1.27.4 1.25.6 1.24.4 1.23.17)
 LATEST='1.23'
 LTS='1.27'
 
@@ -26,10 +26,10 @@ for version in ${VERSIONS[@]}; do
   docker tag $REPO:$version $REPO:$versionWithoutPatch
 done
 
-echo "Tagigng Latest"
+echo "Tagigng Latest ($LATEST)"
 docker tag $REPO:$LATEST $REPO:latest
 
-echo "Tagging LTS"
+echo "Tagging LTS ($LTS)"
 docker tag $REPO:$LTS $REPO:lts
 
 read -p "Press enter to push build images to Docker Hub"

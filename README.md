@@ -27,7 +27,6 @@ Use the following environmental variables to generate a `LocalSettings.php` and 
  - `-e MEDIAWIKI_ADMIN_USER=` (defaults to `admin`; configures default administrator username)
  - `-e MEDIAWIKI_ADMIN_PASS=` (defaults to `rosebud`; configures default administrator password)
  - `-e MEDIAWIKI_UPDATE=true` (defaults to `false`; run `php maintenance/update.php`)
- - `-e MEDIAWIKI_SLEEP=` (defaults to `0`; delays startup of container, useful when using Docker Compose)
 
 As mentioned, this will generate the `LocalSettings.php` file that is required by MediaWiki. If you mounted a shared volume (see `Shared Volume` below), the generated `LocalSettings.php` will be automatically moved to your share volume allowing you to edit it. If a `CustomSettings.php` file exists in your data file, a `require('/data/CustomSettings.php');` will be appended to the generated `LocalSettings.php` file.
 
@@ -59,11 +58,34 @@ To run with [Docker Compose](https://docs.docker.com/compose/install/), you'll n
 
 The example above uses `--link` to connect the MediaWiki container with a running [mysql](https://hub.docker.com/_/mysql/) container. This is probably not the best idea for use in production, keeping data in docker containers can be dangerous.
 
+### Using MySQL
+
+You can use a MySQL database, the recommended database for MediaWiki. Here's an example:
+
+    docker run
+      -e MEDIAWIKI_DB_TYPE=mysql
+      -e MEDIAWIKI_DB_HOST=some-mysql
+      -e MEDIAWIKI_DB_USER=mediawiki
+      -e MEDIAWIKI_DB_PASSWORD=password
+      --name some-mediawiki
+      -v /local/data/path:/data:rw
+      -d
+      benhutchins/mediawiki
+
+
 ### Using Postgres
 
-You can use Postgres instead of MySQL as your database server using the `:postgres` tag:
+You can also use Postgres instead of MySQL as your database server:
 
-    docker run --name some-mediawiki --link some-postgres:postgres -v /local/data/path:/data:rw -d benhutchins/mediawiki:postgres
+    docker run
+      -e MEDIAWIKI_DB_TYPE=postgres
+      -e MEDIAWIKI_DB_HOST=some-postgres
+      -e MEDIAWIKI_DB_USER=mediawiki
+      -e MEDIAWIKI_DB_PASSWORD=password
+      --name some-mediawiki
+      -v /local/data/path:/data:rw
+      -d
+      benhutchins/mediawiki
 
 ### Using Database Server
 
