@@ -1,3 +1,14 @@
+# Deprecrated
+
+This repo is no longer being maintained since it was forked to the official mediawiki docker image, please see:
+
+1. https://github.com/wikimedia/mediawiki-docker
+2. https://hub.docker.com/_/mediawiki
+
+Repo exists for historic purposes only.
+
+ -- Benjamin H.
+
 # What is MediaWiki?
 
 MediaWiki is a free and open-source wiki app, used to power wiki websites such
